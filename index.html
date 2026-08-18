@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECMC 2027 Bratislava — coming soon</title>
+<meta name="description" content="ECMC 2027 Bratislava — coming soon.">
+<meta name="theme-color" content="#410056">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23410056'/></svg>">
+<style>
+  :root{
+    --black:#000000;
+    --white:#ffffff;
+    --red:#b2000e;
+    --yellow:#fece00;
+    --purple:#410056;
+    --turquoise:#0ec9ae;
+    --cycle:18s;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    display:grid;
+    place-items:center;
+    padding:6vmin;
+    background:var(--black);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    animation:bg var(--cycle) ease-in-out infinite;
+  }
+  a{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5vmin;
+    max-width:20ch;
+    color:var(--white);
+    text-decoration:none;
+    text-align:center;
+    text-wrap:balance;
+    font-size:clamp(2rem,9vmin,5.5rem);
+    font-weight:700;
+    line-height:1.1;
+    letter-spacing:-0.02em;
+    animation:fg var(--cycle) step-end infinite;
+  }
+  /* Logo od grafika: nahraď obsah <div class="logo"> inline SVG kódom.
+     Ak SVG používa fill="currentColor", prefarbí sa spolu s textom. */
+  .logo{width:min(60vmin,420px)}
+  .logo svg{display:block;width:100%;height:auto}
+
+  @keyframes bg{
+    0%,11.6%   {background-color:var(--black)}
+    16.6%,28.3%{background-color:var(--red)}
+    33.3%,45%  {background-color:var(--yellow)}
+    50%,61.6%  {background-color:var(--purple)}
+    66.6%,78.3%{background-color:var(--turquoise)}
+    83.3%,95%  {background-color:var(--white)}
+    100%       {background-color:var(--black)}
+  }
+  /* Text sa preklopí uprostred prechodu, aby bol vždy čitateľný */
+  @keyframes fg{
+    0%   {color:var(--white)}  /* čierna + červená */
+    31%  {color:var(--black)}  /* žltá + tyrkysová... */
+    47.5%{color:var(--white)}  /* fialová */
+    64%  {color:var(--black)}  /* tyrkysová + biela */
+    97%  {color:var(--white)}  /* späť na čiernu */
+  }
+  @media (prefers-reduced-motion:reduce){
+    body,a{animation:none}
+    body{background:var(--purple)}
+    a{color:var(--white)}
+  }
+</style>
+</head>
+<body>
+  <a href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">
+    <div class="logo"><!-- sem príde SVG od grafika --></div>
+    ecmc2027 Bratislava coming soon
+  </a>
+</body>
+</html>
