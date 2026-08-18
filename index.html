@@ -15,7 +15,7 @@
     --yellow:#fece00;
     --purple:#410056;
     --turquoise:#0ec9ae;
-    --cycle:18s;
+    --cycle:60s;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
@@ -49,21 +49,21 @@
   .logo svg{display:block;width:100%;height:auto}
 
   @keyframes bg{
-    0%,11.6%   {background-color:var(--black)}
-    16.6%,28.3%{background-color:var(--red)}
-    33.3%,45%  {background-color:var(--yellow)}
-    50%,61.6%  {background-color:var(--purple)}
-    66.6%,78.3%{background-color:var(--turquoise)}
-    83.3%,95%  {background-color:var(--white)}
-    100%       {background-color:var(--black)}
+    0%,8.33%    {background-color:var(--black)}
+    16.66%,25%  {background-color:var(--red)}
+    33.33%,41.66%{background-color:var(--yellow)}
+    50%,58.33%  {background-color:var(--purple)}
+    66.66%,75%  {background-color:var(--turquoise)}
+    83.33%,91.66%{background-color:var(--white)}
+    100%        {background-color:var(--black)}
   }
   /* Text sa preklopí uprostred prechodu, aby bol vždy čitateľný */
   @keyframes fg{
-    0%   {color:var(--white)}  /* čierna + červená */
-    31%  {color:var(--black)}  /* žltá + tyrkysová... */
-    47.5%{color:var(--white)}  /* fialová */
-    64%  {color:var(--black)}  /* tyrkysová + biela */
-    97%  {color:var(--white)}  /* späť na čiernu */
+    0%      {color:var(--white)}  /* čierna + červená */
+    29.16%  {color:var(--black)}  /* žltá */
+    45.83%  {color:var(--white)}  /* fialová */
+    62.5%   {color:var(--black)}  /* tyrkysová + biela */
+    95.83%  {color:var(--white)}  /* späť na čiernu */
   }
   @media (prefers-reduced-motion:reduce){
     body,a{animation:none}
@@ -75,7 +75,7 @@
 <body>
   <a href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">
     <div class="logo"><!-- sem príde SVG od grafika --></div>
-    ecmc2027 Bratislava coming soon
+    ECMC2027 Bratislava coming soon
   </a>
 </body>
 </html>
