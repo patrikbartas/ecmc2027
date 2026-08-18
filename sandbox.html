@@ -64,7 +64,7 @@
   /* --- ovládací panel --- */
   #panel{position:fixed;top:10px;left:10px;z-index:9;background:#000c;color:#fff;
          border:1px solid #fff4;padding:10px 12px;font-size:11px;line-height:1.9;
-         border-radius:6px;backdrop-filter:blur(6px);min-width:230px}
+         border-radius:6px;backdrop-filter:blur(6px);width:260px}
   #panel h2{font-size:11px;letter-spacing:.1em;margin-bottom:6px;opacity:.6;font-weight:400}
   #panel label{display:flex;align-items:center;gap:8px;justify-content:space-between;white-space:nowrap}
   #panel input[type=range]{width:100px;accent-color:#fff}
@@ -93,8 +93,9 @@
   <label>vlastný kurzor <input id="cKurzor" type="checkbox"></label>
   <label>výbuchy <input id="cVybuch" type="checkbox" checked></label>
   <label>rozdvojenie <input id="cSplit" type="checkbox" checked></label>
+  <label>len hotové sprity <input id="cHotove" type="checkbox" checked></label>
   <label>hitboxy <input id="cHit" type="checkbox"></label>
-  <div class="pozn">Bicykle sú dočasné. Klik = ťuknutie, ťahaním sa presúvajú. <b id="fps">–</b> fps</div>
+  <div class="pozn">Mestský bicykel je hotový. Cargo a velociped sú zatiaľ dočasné — vypni „len hotové sprity“, ak ich chceš vidieť. Klik = ťuknutie, ťahaním sa presúvajú. <b id="fps">–</b> fps</div>
 </div>
 
 <script>
@@ -187,7 +188,26 @@ function docasnySheet(){
 // ---------------------------------------------------------------------------
 const platno = document.getElementById('plocha');
 const ctx = platno.getContext('2d');
-const sheet = docasnySheet();
+
+// ---------------------------------------------------------------------------
+// SHEETY — skutočná grafika od grafika, s dočasnou ako záložkou.
+// Nový typ = pridať riadok. Nič iné sa nemení.
+// ---------------------------------------------------------------------------
+const docasny = docasnySheet();
+const SHEETY = {
+  mestsky:   {src:'assets/sprites/bike-city-v1.png', obraz:null},
+  cargo:     {src:null, obraz:null},        // čaká sa na grafika
+  velociped: {src:null, obraz:null},        // čaká sa na grafika
+};
+let hotovych = 0;
+for(const t in SHEETY){
+  const z = SHEETY[t]; if(!z.src) continue;
+  const i = new Image();
+  i.onload  = () => { z.obraz = i; hotovych++; };
+  i.onerror = () => console.warn('nepodarilo sa načítať', z.src);
+  i.src = z.src;
+}
+const sheetPre = typ => (N.lenHotove ? SHEETY.mestsky.obraz : SHEETY[typ]?.obraz) || docasny;
 
 let W=0, H=0, dpr=1;
 function prisposob(){
@@ -201,7 +221,7 @@ function prisposob(){
 addEventListener('resize', prisposob); prisposob();
 
 // --- nastavenia z panela ---
-const N = {pocet:18, rychlost:1, mierka:2, pauzy:.45, kurzor:false, vybuch:true, split:true, hit:false};
+const N = {pocet:18, rychlost:1, mierka:2, pauzy:.45, kurzor:false, vybuch:true, split:true, hit:false, lenHotove:true};
 
 const nah  = (a,b) => a + Math.random()*(b-a);
 const nahI = (a,b) => Math.floor(nah(a,b+1));
@@ -348,7 +368,7 @@ function kresli(){
     if(b.drzany) ctx.translate(0,-6);              // zdvihnutý nad plochu
     if(flip) ctx.scale(-1,1);
     if(b.mrka > 0) ctx.globalAlpha = (Math.floor(b.mrka*20)%2) ? .35 : 1;
-    ctx.drawImage(sheet, snimka*BUNKA, riadok*BUNKA, BUNKA, BUNKA, -d/2, -d/2, d, d);
+    ctx.drawImage(sheetPre(b.typ), snimka*BUNKA, riadok*BUNKA, BUNKA, BUNKA, -d/2, -d/2, d, d);
     ctx.restore();
 
     if(N.hit){
@@ -444,7 +464,7 @@ naviaz('cPocet','vPocet','pocet', v=>v, v=>v);
 naviaz('cRychlost','vRychlost','rychlost', v=>v/100, v=>(v/100).toFixed(1));
 naviaz('cMierka','vMierka','mierka', v=>v/10, v=>(v/10).toFixed(1));
 naviaz('cPauzy','vPauzy','pauzy', v=>v/100, v=>v);
-for(const [id,key] of [['cKurzor','kurzor'],['cVybuch','vybuch'],['cSplit','split'],['cHit','hit']]){
+for(const [id,key] of [['cKurzor','kurzor'],['cVybuch','vybuch'],['cSplit','split'],['cHit','hit'],['cHotove','lenHotove']]){
   const el = $(id);
   const nastav = () => { N[key] = el.checked; if(key==='kurzor') platno.classList.toggle('vlastny-kurzor', el.checked); };
   el.addEventListener('change', nastav); nastav();

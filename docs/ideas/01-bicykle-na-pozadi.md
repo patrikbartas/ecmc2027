@@ -2,7 +2,7 @@
 
 **Stav:** 🔨 Prototyp — založený 18. 8. 2026
 **Kde:** [`sandbox.html`](../../sandbox.html) → živé na [ecmc2027.com/sandbox.html](https://ecmc2027.com/sandbox.html)
-**Grafika:** zatiaľ dočasná, generovaná kódom. Čaká sa na sprity od grafika.
+**Grafika:** sandbox zatiaľ používa dočasnú grafiku generovanú kódom. Prvý mestský sprite draft je v [`assets/sprites/bike-city-v1.png`](../../assets/sprites/bike-city-v1.png) a čaká na vizuálne odsúhlasenie.
 
 ## O čo ide
 
@@ -284,23 +284,59 @@ Postavené a funkčné v `sandbox.html`:
 
 Namerané ~120 fps pri 18 bicykloch.
 
+### Prvá dodávka od grafika — skontrolovaná 18. 8. 2026
+
+`assets/sprites/bike-city-v1.png` — **192 × 288 px**, presne 4 stĺpce × 6 riadkov po 48 px.
+Technicky bez chyby:
+
+| Kontrola | Výsledok |
+|---|---|
+| Rozmer a mriežka | 4 snímky × 6 riadkov po 48 px ✅ |
+| Farba | jediná farba `#ffffff` ✅ |
+| Poloprehľadné pixely | **0** (0,00 %) ✅ |
+| Priehľadné pozadie | áno ✅ |
+| Všetky bunky naplnené | áno, 24/24 ✅ |
+| Veľkosť súboru | 3,5 kB |
+
+Poradie riadkov sedí s konštantou `RIADOK` v kóde — overené vizuálne:
+
+| Riadok | Smer | Ako sa overilo |
+|---|---|---|
+| 0 | E (doprava) | sedlo vzadu vľavo, riadidlá vpredu vpravo |
+| 1 | S (dole) | riadidlá bližšie k divákovi než sedlo |
+| 2 | N (hore) | riadidlá v diaľke hore, sedlo blízko |
+| 3 | SE (šikmo dole-doprava) | predok mieri dole-doprava |
+| 4 | NE (šikmo hore-doprava) | predok mieri hore-doprava |
+| 5 | trackstand | bok, kolesá stoja, mierne kývanie |
+
+**Toto je vzor pre ďalšie dodávky.** Cargo a velociped stačí urobiť rovnako a pomenovať
+`bike-cargo-v1.png` a `bike-penny-v1.png`.
+
 ### Dočasná grafika
 
 Sprity sú zatiaľ **generované kódom** vo funkcii `docasnySheet()`. Kreslí presne ten formát,
 ktorý čakáme od grafika: bunky 48×48, 4 snímky v riadku, 6 riadkov (5 smerov + trackstand),
 biele na priehľadnom.
 
-**Až prídu skutočné PNG, zmaže sa celá funkcia `docasnySheet()`** a nahradí načítaním obrázka.
-Zvyšok kódu sa nemení — konštanty `BUNKA`, `SNIMOK`, `RIADOK` a `SEKTOR` ostávajú.
+Dočasná grafika **ostáva ako záložka** pre typy, ktoré ešte nie sú dodané. V paneli je prepínač
+**„len hotové sprity"** — zapnutý ukazuje všetky bicykle ako mestský, vypnutý domieša dočasné
+cargo a velociped, aby bolo vidieť, čo ešte chýba.
+
+Pridanie ďalšieho typu = jeden riadok v objekte `SHEETY` v `sandbox.html`. Nič iné.
+
+Prvý kandidát na náhradu je `assets/sprites/bike-city-v1.png`: mestský/fixed-gear bicykel,
+4 × 6 buniek po 48 × 48 px, biely 1-bit pixel art na priehľadnom pozadí. Do sandboxu sa
+zapojí až po odsúhlasení vizuálneho smeru, aby dočasná kresba ostala bezpečný fallback.
 
 ### Čo ešte nie je
 
 - Bicykle na seba nereagujú, prechádzajú cez seba
-- Všetky tri typy vyzerajú rovnako (dočasná grafika ich nerozlišuje)
+- Cargo a velociped ešte nemajú grafiku
 - Nie je doriešené správanie na mobile
 - `prefers-reduced-motion` sa zatiaľ nerešpektuje (v sandboxe zámerne, na ostrej stránke bude musieť)
 
 ## Ďalší krok
 
-Vyskúšať naživo, doladiť počet a rýchlosť posuvníkmi, a povedať čo zmeniť.
-Až potom má zmysel zadávať grafikovi prvú vlnu spritov.
+Odsúhlasiť alebo upraviť vizuálny smer `bike-city-v1.png`. Potom ho zapojiť do sandboxu,
+vyskúšať naživo a doladiť počet, rýchlosť a mierku posuvníkmi. Až po tomto teste má zmysel
+dokresľovať cargo, velociped a pokročilé animácie.
