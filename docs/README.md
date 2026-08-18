@@ -10,6 +10,7 @@ Znalostná báza k projektu. Cieľ: aby sa dal web stavať bez toho, aby si mi z
 | [04-analyza-predchadzajucich-webov.md](04-analyza-predchadzajucich-webov.md) | Rozbor webov ECMC 2025 Salzburg a 2026 Berlín — čo prevziať |
 | [05-rozsah-webu.md](05-rozsah-webu.md) | Plánovaný rozsah nášho webu, mapa, registrácie, platby |
 | [06-otvorene-otazky.md](06-otvorene-otazky.md) | Čo ešte potrebujem vedieť od teba / od organizátorov |
+| [ideas/](ideas/) | Produktové nápady, ktoré ešte nie sú rozhodnuté |
 | [zdroje.md](zdroje.md) | Odkazy na všetko, z čoho som čerpal |
 
 ## Stav (18. 8. 2026)

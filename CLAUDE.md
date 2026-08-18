@@ -29,3 +29,9 @@ Push do `main` → Vercel nasadí automaticky za ~2 s. Žiadny build krok, žiad
 ## Čo blokuje ďalšiu prácu
 
 Termín podujatia, miesto/HQ a existencia právneho subjektu (kvôli Stripe). Detaily v `docs/06-otvorene-otazky.md`.
+
+## Nápady
+
+Produktové nápady, ktoré ešte nie sú rozhodnuté, sú v `docs/ideas/`. Skôr než niečo z nich začneš stavať, prečítaj si príslušný súbor — je tam aj to, prečo sú niektoré cesty zamietnuté.
+
+Protoypy nepatria do `index.html`. Skúšajú sa v `sandbox.html` (s `noindex`), a do ostrej stránky idú až po odsúhlasení.
