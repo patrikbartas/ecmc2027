@@ -31,22 +31,27 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:5vmin;
-    max-width:20ch;
+    gap:4vmin;
     color:var(--white);
     text-decoration:none;
     text-align:center;
-    text-wrap:balance;
-    font-size:clamp(1rem,4.5vmin,2.75rem);
+    font-size:clamp(.85rem,2.6vmin,1.4rem);
     font-weight:700;
     line-height:1.1;
-    letter-spacing:-0.02em;
+    letter-spacing:.12em;text-transform:uppercase;
     animation:fg var(--cycle) step-end infinite;
   }
-  /* Logo od grafika: nahraď obsah <div class="logo"> inline SVG kódom.
-     Ak SVG používa fill="currentColor", prefarbí sa spolu s textom. */
-  .logo{width:min(60vmin,420px)}
-  .logo svg{display:block;width:100%;height:auto}
+  /* Logo sa vykresľuje ako maska, takže preberá currentColor spolu s textom.
+     logo.svg netreba nijako upravovať – použije sa len jeho tvar, nie farba. */
+  .logo{
+    width:min(58vmin,360px);
+    aspect-ratio:91.99/117.42;
+    background-color:currentColor;
+    -webkit-mask:url(logo.svg) center/contain no-repeat;
+    mask:url(logo.svg) center/contain no-repeat;
+  }
+  /* Skryté pre oči, čitateľné pre vyhľadávače a čítačky obrazovky */
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 
   @keyframes bg{
     0%,8.33%    {background-color:var(--black)}
@@ -74,8 +79,8 @@
 </head>
 <body>
   <a href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">
-    <div class="logo"><!-- sem príde SVG od grafika --></div>
-    ECMC2027 Bratislava coming soon
+    <h1 class="logo"><span class="sr-only">ECMC 2027 Bratislava — European Cycle Messenger Championships</span></h1>
+    coming soon
   </a>
 </body>
 </html>
