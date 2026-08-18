@@ -1,7 +1,8 @@
 # Pixelové bicykle na pozadí
 
-**Stav:** 🔨 Prototyp — založený 18. 8. 2026
-**Kde:** [`sandbox.html`](../../sandbox.html) → živé na [ecmc2027.com/sandbox.html](https://ecmc2027.com/sandbox.html)
+**Stav:** ✅ Nasadené na ostrej stránke 18. 8. 2026 (klávesa **B**)
+**Kde:** [`index.html`](../../index.html) — zapína klávesa **B**, implicitne vypnuté.
+**Ladenie:** [`sandbox.html`](../../sandbox.html) s panelom pod **H**.
 **Grafika:** vybraný je vizuálny smer `variant-2`. Finálna trojica je [`bike-city.png`](../../assets/sprites/bike-city.png), [`bike-velociped.png`](../../assets/sprites/bike-velociped.png) a [`bike-cargo.png`](../../assets/sprites/bike-cargo.png). Sandbox ich ešte nemá zapojené.
 
 ## O čo ide

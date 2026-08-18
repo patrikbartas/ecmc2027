@@ -19,6 +19,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
+  body{overflow:hidden}
   body{
     display:grid;
     place-items:center;
@@ -27,7 +28,15 @@
     font-family:ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
     animation:bg var(--cycle) ease-in-out infinite;
   }
+  /* Plocha s bicyklami. Zapína sa klávesou B, implicitne je prázdna. */
+  #plocha{position:fixed;inset:0;z-index:0;display:block;
+          animation:sprite var(--cycle) step-end infinite}
+  #plocha.mozem-chytit{cursor:grab}
+  #plocha.chytam{cursor:grabbing}
+
   a{
+    position:relative;
+    z-index:1;
     display:flex;
     flex-direction:column;
     align-items:center;
@@ -64,16 +73,251 @@
     62.5%   {color:var(--black)}  /* tyrkysová + biela */
     95.83%  {color:var(--white)}  /* späť na čiernu */
   }
+  /* Sprity sú biele; brightness(0) z nich spraví čierne a alfu nechá –
+     bicykle sa preklápajú v rovnakom rytme ako logo. */
+  @keyframes sprite{
+    0%      {filter:none}
+    29.16%  {filter:brightness(0)}
+    45.83%  {filter:none}
+    62.5%   {filter:brightness(0)}
+    95.83%  {filter:none}
+  }
   @media (prefers-reduced-motion:reduce){
-    body,a{animation:none}
+    body,a,#plocha{animation:none}
     body{background:var(--purple)}
     a{color:var(--white)}
   }
 </style>
 </head>
 <body>
+  <canvas id="plocha" aria-hidden="true"></canvas>
   <a href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">
     <h1 class="logo"><span class="sr-only">ECMC 2027 Bratislava — European Cycle Messenger Championships</span></h1>
   </a>
+
+<script>
+/* ---------------------------------------------------------------------------
+   Pixelové bicykle na pozadí.  Zapína a vypína ich klávesa B.
+   Nikde to nie je napísané – je to schválne.
+
+   Ladenie hodnôt a prepínanie farebných režimov je v sandbox.html.
+   Popis a zadanie pre grafika: docs/ideas/01-bicykle-na-pozadi.md
+--------------------------------------------------------------------------- */
+(() => {
+'use strict';
+
+// Sprite sheet: bunky 48×48, 4 snímky v riadku, 6 riadkov.
+// Nakreslených 5 smerov, zvyšné 3 vznikajú preklopením. Biele na priehľadnom.
+const BUNKA = 48, SNIMOK = 4;
+const RIADOK = {E:0, S:1, N:2, SE:3, NE:4, TRACKSTAND:5};
+// poradie zodpovedá atan2: 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE
+const SEKTOR = [
+  {r:RIADOK.E, f:0}, {r:RIADOK.SE, f:0}, {r:RIADOK.S, f:0}, {r:RIADOK.SE, f:1},
+  {r:RIADOK.E, f:1}, {r:RIADOK.NE, f:1}, {r:RIADOK.N, f:0}, {r:RIADOK.NE, f:0},
+];
+
+const TYPY = ['mestsky','velociped','cargo'];
+const SUBOR = {
+  mestsky:  'assets/sprites/bike-city.png',
+  velociped:'assets/sprites/bike-velociped.png',
+  cargo:    'assets/sprites/bike-cargo.png',
+};
+// Vyladené v sandboxe
+const POCET = 15, RYCHLOST = 1, MIERKA = 1.4, PAUZY = .63, POMER = [33,33,34];
+
+// Na telefónoch a tabletoch sa bicykle nespúšťajú – nie je klávesnica a je to
+// zbytočná záťaž. Rovnako pri zapnutom obmedzení pohybu v systéme.
+const NEPUSTAT = matchMedia('(pointer:coarse)').matches || innerWidth < 700
+              || matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+const platno = document.getElementById('plocha');
+const ctx = platno.getContext('2d');
+const sheety = {};
+let nacitane = false, zapnute = false;
+
+function nacitaj(){
+  if(nacitane) return; nacitane = true;
+  for(const t of TYPY){ const i = new Image(); i.onload = () => sheety[t] = i; i.src = SUBOR[t]; }
+}
+
+let W=0, H=0;
+function prisposob(){
+  const dpr = Math.min(devicePixelRatio||1, 2);
+  W = innerWidth; H = innerHeight;
+  platno.width = Math.round(W*dpr); platno.height = Math.round(H*dpr);
+  platno.style.width = W+'px'; platno.style.height = H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.imageSmoothingEnabled = false;   // bez tohto sa pixel art rozmaže
+}
+addEventListener('resize', prisposob); prisposob();
+
+const nah = (a,b) => a + Math.random()*(b-a);
+function nahodnyTyp(){
+  let r = Math.random()*100;
+  for(let i=0;i<TYPY.length;i++){ r -= POMER[i]; if(r<=0) return TYPY[i]; }
+  return TYPY[0];
+}
+
+let bicykle = [], castice = [], caka = 0;
+
+function novy(x,y){
+  const b = {x: x ?? nah(0,W), y: y ?? nah(0,H), typ: nahodnyTyp(),
+             dx:0, dy:0, stav:'stoji', cas:0, snimka:0, snimkaCas:0,
+             vlastna: nah(.8,1.25), drzany:false, mrka:0};
+  stav(b, Math.random()<.5 ? 'ide' : 'stoji');
+  b.cas = nah(0,2);                        // rozhádzané štarty, nech nejdú naraz
+  return b;
+}
+function stav(b,s){
+  b.stav = s; b.snimka = 0; b.snimkaCas = 0;
+  if(s === 'ide'){ const u = smer(b); b.dx = Math.cos(u); b.dy = Math.sin(u); b.cas = nah(2,7); }
+  else b.cas = nah(1,5);
+}
+function smer(b){
+  const o = 60;
+  if(b.x<o || b.x>W-o || b.y<o || b.y>H-o) return Math.atan2(H/2-b.y, W/2-b.x) + nah(-.5,.5);
+  const t = Math.atan2(b.dy,b.dx);
+  return (b.dx||b.dy) ? t + (Math.random()<.5?-1:1)*nah(Math.PI/4, Math.PI*.75)
+                      : nah(0, Math.PI*2);
+}
+function vybuchni(b){
+  for(let i=0;i<14;i++){
+    const a = nah(0,Math.PI*2), v = nah(30,150);
+    castice.push({x:b.x,y:b.y,dx:Math.cos(a)*v,dy:Math.sin(a)*v,zivot:nah(.4,.9),max:.9,r:nah(1,2.5)});
+  }
+  bicykle.splice(bicykle.indexOf(b),1); caka++;
+  setTimeout(() => {                       // po výbuchu musí prísť náhrada
+    if(caka<=0) return; caka--;
+    const zhora = Math.random()<.5;
+    bicykle.push(novy(zhora?nah(0,W):(Math.random()<.5?-30:W+30),
+                      zhora?(Math.random()<.5?-30:H+30):nah(0,H)));
+  }, nah(1500,4000));
+}
+function rozdvoj(b){
+  const a = Math.atan2(b.dy,b.dx);
+  for(const s of [-1,1]){
+    const n = novy(b.x,b.y); stav(n,'ide');
+    n.dx = Math.cos(a+s*.9); n.dy = Math.sin(a+s*.9); bicykle.push(n);
+  }
+  for(let i=0;i<6;i++){
+    const u = nah(0,Math.PI*2), v = nah(20,60);
+    castice.push({x:b.x,y:b.y,dx:Math.cos(u)*v,dy:Math.sin(u)*v,zivot:.35,max:.35,r:1.5});
+  }
+  bicykle.splice(bicykle.indexOf(b),1);
+}
+const polomer = () => BUNKA*.42*MIERKA;
+
+function update(dt){
+  while(bicykle.length + caka < POCET) bicykle.push(novy());
+  for(const b of bicykle){
+    if(b.drzany) continue;
+    b.cas -= dt;
+    if(b.cas <= 0){
+      if(b.stav === 'ide'){
+        const r = Math.random();
+        if(r < .09){ vybuchni(b); continue; }
+        if(r < .14){ rozdvoj(b);  continue; }
+        stav(b, Math.random() < PAUZY ? 'stoji' : 'ide');
+      } else stav(b,'ide');
+    }
+    if(b.stav === 'ide'){
+      const v = 34*RYCHLOST*b.vlastna;
+      b.x += b.dx*v*dt; b.y += b.dy*v*dt;
+      const m = polomer();
+      if(b.x<-m||b.x>W+m||b.y<-m||b.y>H+m) stav(b,'ide');
+    }
+    if(b.mrka > 0) b.mrka -= dt;
+    const tempo = b.stav==='ide' ? .11/Math.max(.35, RYCHLOST*b.vlastna) : .22;
+    b.snimkaCas += dt;
+    if(b.snimkaCas >= tempo){ b.snimkaCas = 0; b.snimka = (b.snimka+1)%SNIMOK; }
+  }
+  for(let i=castice.length-1;i>=0;i--){
+    const c = castice[i];
+    c.x += c.dx*dt; c.y += c.dy*dt; c.dx*=.94; c.dy*=.94;
+    c.zivot -= dt; if(c.zivot<=0) castice.splice(i,1);
+  }
+}
+
+function kresli(){
+  ctx.clearRect(0,0,W,H);
+  if(!zapnute) return;
+  // dojem plochy: kto je nižšie, kreslí sa navrch
+  for(const b of bicykle.slice().sort((a,b)=>a.y-b.y)){
+    const sh = sheety[b.typ]; if(!sh) continue;
+    const d = BUNKA*MIERKA;
+    let r, f;
+    if(b.stav === 'stoji' && !b.drzany){ r = RIADOK.TRACKSTAND; f = b.dx < 0; }
+    else { const s = ((Math.round(Math.atan2(b.dy,b.dx)/(Math.PI/4))%8)+8)%8; r = SEKTOR[s].r; f = SEKTOR[s].f; }
+    ctx.save();
+    ctx.translate(Math.round(b.x), Math.round(b.y));
+    if(b.drzany) ctx.translate(0,-6);
+    if(f) ctx.scale(-1,1);
+    if(b.mrka > 0) ctx.globalAlpha = (Math.floor(b.mrka*20)%2) ? .35 : 1;
+    ctx.drawImage(sh, (b.drzany?0:b.snimka)*BUNKA, r*BUNKA, BUNKA, BUNKA, -d/2, -d/2, d, d);
+    ctx.restore();
+  }
+  ctx.fillStyle = '#fff';
+  for(const c of castice){
+    ctx.globalAlpha = Math.max(0, c.zivot/c.max);
+    ctx.fillRect(Math.round(c.x-c.r), Math.round(c.y-c.r), c.r*2, c.r*2);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/* --- chytanie a ťahanie --- */
+function pod(px,py){
+  if(!zapnute) return null;
+  const m = polomer();
+  for(let i=bicykle.length-1;i>=0;i--){
+    const b = bicykle[i];
+    if(Math.abs(px-b.x)<m && Math.abs(py-b.y)<m) return b;
+  }
+  return null;
+}
+let tahany=null, od=null, posledna=null;
+platno.addEventListener('pointermove', e => {
+  if(tahany){ posledna = {x:e.clientX,y:e.clientY}; tahany.x = e.clientX; tahany.y = e.clientY; return; }
+  platno.classList.toggle('mozem-chytit', !!pod(e.clientX,e.clientY));
+});
+platno.addEventListener('pointerdown', e => {
+  const b = pod(e.clientX,e.clientY); if(!b) return;
+  tahany = b; b.drzany = true;
+  od = posledna = {x:e.clientX,y:e.clientY};
+  platno.setPointerCapture(e.pointerId);
+  platno.classList.add('chytam');
+});
+addEventListener('pointerup', e => {
+  if(!tahany) return;
+  const b = tahany; b.drzany = false;
+  platno.classList.remove('chytam');
+  if(Math.hypot(e.clientX-od.x, e.clientY-od.y) < 5){
+    if(Math.random() < .10){ vybuchni(b); tahany = null; return; }   // 1 klik z 10
+    b.mrka = .45; stav(b,'stoji'); b.cas = .8;
+  } else {
+    stav(b,'ide');
+    const dx = e.clientX-posledna.x, dy = e.clientY-posledna.y;
+    if(dx||dy){ const l = Math.hypot(dx,dy); b.dx = dx/l; b.dy = dy/l; }
+  }
+  tahany = null;
+});
+
+addEventListener('keydown', e => {
+  if(e.metaKey || e.ctrlKey || e.altKey || NEPUSTAT) return;
+  if(e.key.toLowerCase() !== 'b') return;
+  zapnute = !zapnute;
+  if(zapnute) nacitaj(); else { bicykle = []; castice = []; caka = 0; }
+});
+
+let posledny = performance.now();
+function slucka(t){
+  const dt = Math.min((t-posledny)/1000, .05);
+  posledny = t;
+  if(zapnute) update(dt);
+  kresli();
+  requestAnimationFrame(slucka);
+}
+requestAnimationFrame(slucka);
+})();
+</script>
 </body>
 </html>

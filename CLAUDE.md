@@ -35,3 +35,9 @@ Termín podujatia, miesto/HQ a existencia právneho subjektu (kvôli Stripe). De
 Produktové nápady, ktoré ešte nie sú rozhodnuté, sú v `docs/ideas/`. Skôr než niečo z nich začneš stavať, prečítaj si príslušný súbor — je tam aj to, prečo sú niektoré cesty zamietnuté.
 
 Protoypy nepatria do `index.html`. Skúšajú sa v `sandbox.html` (s `noindex`), a do ostrej stránky idú až po odsúhlasení.
+
+## Changelog
+
+Každá zmena, ktorú uvidí návštevník, patrí do `CHANGELOG.md` — pod `## Nezaradené`, kým nie je nasadená, potom pod dátum nasadenia. Refaktoring a interné úpravy tam nepatria.
+
+Verzie sa nečíslujú, používajú sa dátumy. Dôvod je vysvetlený priamo v súbore.
