@@ -87,17 +87,17 @@
 
   <div class="skupina">
     <div class="nadpis" style="border:0;padding:0">POHYB</div>
-    <div class="r"><span>počet</span><input id="cPocet" type="range" min="1" max="60" value="18"><b id="vPocet">18</b></div>
+    <div class="r"><span>počet</span><input id="cPocet" type="range" min="1" max="60" value="15"><b id="vPocet">15</b></div>
     <div class="r"><span>rýchlosť</span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></div>
-    <div class="r"><span>veľkosť</span><input id="cMierka" type="range" min="10" max="50" value="20"><b id="vMierka">2.0</b></div>
-    <div class="r"><span>pauzy</span><input id="cPauzy" type="range" min="0" max="100" value="45"><b id="vPauzy">45</b></div>
+    <div class="r"><span>veľkosť</span><input id="cMierka" type="range" min="10" max="50" value="14"><b id="vMierka">1.4</b></div>
+    <div class="r"><span>pauzy</span><input id="cPauzy" type="range" min="0" max="100" value="63"><b id="vPauzy">63</b></div>
   </div>
 
   <div class="skupina">
     <div class="nadpis">POMER BICYKLOV</div>
-    <div class="r"><span>mestský</span><input id="cMix0" type="range" min="0" max="10" value="6"><b id="vMix0">–</b></div>
-    <div class="r"><span>velociped</span><input id="cMix1" type="range" min="0" max="10" value="2"><b id="vMix1">–</b></div>
-    <div class="r"><span>cargo</span><input id="cMix2" type="range" min="0" max="10" value="2"><b id="vMix2">–</b></div>
+    <div class="r"><span>mestský</span><input id="cMix0" type="range" min="0" max="100" value="33"><b id="vMix0">33%</b></div>
+    <div class="r"><span>velociped</span><input id="cMix1" type="range" min="0" max="100" value="33"><b id="vMix1">33%</b></div>
+    <div class="r"><span>cargo</span><input id="cMix2" type="range" min="0" max="100" value="34"><b id="vMix2">34%</b></div>
   </div>
 
   <div class="skupina">
@@ -159,8 +159,14 @@ function prisposob(){
 }
 addEventListener('resize', prisposob); prisposob();
 
-const N = {pocet:18, rychlost:1, mierka:2, pauzy:.45, mix:[6,2,2]};
+const N = {pocet:15, rychlost:1, mierka:1.4, pauzy:.63, mix:[33,33,34]};
 let zapnute = false;               // bicykle sú implicitne vypnuté, zapína ich B
+
+// Na telefónoch a tabletoch sa bicykle nepúšťajú vôbec – nie je klávesnica, ťahanie
+// prstom nedáva zmysel a je to zbytočná záťaž na batériu.
+// Na testovanie sa dá obísť cez ?bicykle=1
+const MOBIL = (matchMedia('(pointer:coarse)').matches || innerWidth < 700)
+              && !new URLSearchParams(location.search).has('bicykle');
 
 const nah  = (a,b) => a + Math.random()*(b-a);
 
@@ -246,8 +252,8 @@ function update(dt){
     if(b.cas <= 0){
       if(b.stav === 'ide'){
         const r = Math.random();
-        if(r < .05){ vybuchni(b); continue; }
-        if(r < .10){ rozdvoj(b);  continue; }
+        if(r < .09){ vybuchni(b); continue; }
+        if(r < .14){ rozdvoj(b);  continue; }
         zmenStav(b, Math.random() < N.pauzy ? 'stoji' : 'ide');
       } else zmenStav(b,'ide');
     }
@@ -340,7 +346,10 @@ addEventListener('pointerup', e => {
   const posun = Math.hypot(e.clientX-tahaneOd.x, e.clientY-tahaneOd.y);
   b.drzany = false;
   platno.classList.remove('chytam');
-  if(posun < 5){ b.mrka = .45; zmenStav(b,'stoji'); b.cas = .8; }
+  if(posun < 5){
+    if(Math.random() < .10){ vybuchni(b); tahany = null; return; }   // 1 klik z 10 = výbuch
+    b.mrka = .45; zmenStav(b,'stoji'); b.cas = .8;
+  }
   else {
     zmenStav(b,'ide');
     let dx = e.clientX-poslednaPoloha.x, dy = e.clientY-poslednaPoloha.y;
@@ -365,17 +374,24 @@ naviaz('cRychlost','vRychlost','rychlost', v=>v/100, v=>(v/100).toFixed(1));
 naviaz('cMierka','vMierka','mierka', v=>v/10, v=>(v/10).toFixed(1));
 naviaz('cPauzy','vPauzy','pauzy', v=>v/100, v=>v);
 
-// pomer typov – váhy prepočítané na percentá
-function nastavMix(prehodit){
-  N.mix = [0,1,2].map(i => +$('cMix'+i).value);
-  const suma = N.mix.reduce((a,b)=>a+b,0);
-  [0,1,2].forEach(i => {
-    $('vMix'+i).textContent = suma ? Math.round(N.mix[i]/suma*100)+'%' : '–';
-  });
-  if(prehodit) for(const b of bicykle) b.typ = nahodnyTyp();
+// Pomer typov: posuvníky sú priamo percentá a ich súčet je vždy 100.
+// Keď posunieš jeden, zvyšok sa rozdelí medzi ostatné dva v pomere, aký mali.
+const mixEl = [0,1,2].map(i => $('cMix'+i));
+function zobrazMix(){
+  mixEl.forEach((el,i) => { el.value = N.mix[i]; $('vMix'+i).textContent = N.mix[i]+'%'; });
 }
-[0,1,2].forEach(i => $('cMix'+i).addEventListener('input', () => nastavMix(true)));
-nastavMix(false);
+function upravMix(i){
+  const nova = +mixEl[i].value, zvysok = 100 - nova;
+  const [a,b] = [0,1,2].filter(j => j !== i);
+  const sucet = N.mix[a] + N.mix[b];
+  if(sucet <= 0){ N.mix[a] = Math.floor(zvysok/2); N.mix[b] = zvysok - N.mix[a]; }
+  else { N.mix[a] = Math.round(zvysok * N.mix[a]/sucet); N.mix[b] = zvysok - N.mix[a]; }
+  N.mix[i] = nova;
+  zobrazMix();
+  for(const bic of bicykle) bic.typ = nahodnyTyp();   // hneď vidieť efekt
+}
+mixEl.forEach((el,i) => el.addEventListener('input', () => upravMix(i)));
+zobrazMix();
 
 const selPozadie = $('cPozadie'), selTon = $('cTon');
 function nastavPozadie(){
@@ -398,6 +414,7 @@ addEventListener('keydown', e => {
   if(e.metaKey || e.ctrlKey || e.altKey) return;
   const k = e.key.toLowerCase();
   if(k === 'b'){
+    if(MOBIL) return;
     zapnute = !zapnute;
     if(!zapnute){ bicykle = []; castice = []; cakajuNaObnovu = 0; }
   } else if(k === 'h'){

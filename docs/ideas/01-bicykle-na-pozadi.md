@@ -329,7 +329,15 @@ Finálna rodina:
 |---|---|---|
 | mestský | `bike-city.png` | kompaktný diamond frame, rovnako veľké kolesá |
 | velociped | `bike-velociped.png` | veľké predné a malé zadné koleso |
-| cargo | `bike-cargo.png` | normálne zadné, menšie predné koleso a nízka plošina |
+| cargo | `bike-cargo.png` | normálne zadné, menšie predné koleso a nízka plošina; opravené cargo V2 |
+
+### Cargo V2 — oprava pohľadu a mriežky 18. 8. 2026
+
+- zadný pohľad má obe kolesá zarovnané do úzkej zvislej čiary bez animovaných špíc
+- smer NE je celý v bunke a bezpečne sa zrkadlí na NW
+- trackstand je celý v bunke vrátane sedla a riadidiel
+- pôvodná verzia ostáva ako `bike-cargo-v1.png`, aktuálna verzia je `bike-cargo-v2.png`
+- stabilný názov používaný webom je `bike-cargo.png` a obsahuje V2
 
 ### Dočasná grafika
 
