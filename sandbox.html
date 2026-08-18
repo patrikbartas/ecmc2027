@@ -262,7 +262,7 @@ function rozdvoj(b){
   bicykle.splice(bicykle.indexOf(b),1);
 }
 
-function mierkaTypu(t){ return t==='cargo'?1.15 : t==='velociped'?1.1 : .95; }
+function mierkaTypu(t){ return 1; }   // všetky rovnako veľké – rozdiel má robiť kresba, nie mierka
 function polomer(b){ return BUNKA*.42*N.mierka*mierkaTypu(b.typ); }
 
 // ---------------------------------------------------------------------------

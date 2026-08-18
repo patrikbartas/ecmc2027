@@ -35,6 +35,36 @@ Stiahnutých 41 JS súborov (9,5 MB) a prehľadaných:
 
 Práve ten pohyb hore-dole je to, čo z toho robí plochu a nie bočnú kulisu. Keby sa hýbali len doľava-doprava, čítalo by sa to ako pás, nie ako podlaha.
 
+### Ako majú riešené sprity (overené z ich assetov)
+
+Postavičky **nie sú kreslené kódom**. Sú to hotové obrázkové súbory od grafika, ktoré kód len prehráva. Z ich JS sa dá vyčítať celá štruktúra:
+
+**Smery — 8, presne ako sme si povedali:**
+`front`, `frontLeft`, `frontRight`, `back`, `backLeft`, `backRight`, `left`, `right`
+
+**Pohľad:** súbory sa volajú `Isometric_*` — čiže **izometrický pohľad zhora**, nie z boku. Presne to, čo potrebujeme aj my.
+
+**Stavy a animácie:**
+- `resting` — pokoj
+- `Duplication` — rozdvojenie (to, čo sa Patrikovi páčilo)
+- `Isometric_Front_Celebrate`, `_Thinking`, `_HighFive`, `_TypeDance` (4 varianty), `_Transferingdata`, `_EyesTriangle`, `_AgentSpawn`
+- Výrazy zvlášť: `Expresions_Front_Normal`, `_Confused`, `_Excited` — a to pre každý smer
+
+**Kurzor je samostatná animovaná postava.** Len na ruku majú **25+ súborov**:
+`CursorHand_PinchState_catch1/2`, `_catch_Idle`, `_catch_MoveLeft`, `_catch_MoveRight`,
+`_catch_stopmoving1..5`, `_Drop_Fall1/2`, `_Drop_Fall_touchdown1..11`, `_Front_HighFive`
+
+Preto tá rukavica pôsobí tak živo — nie je to obrázok, je to postava s vlastným stavovým automatom.
+
+**Technicky:** používajú **animované WebP** (jeden súbor = jedna animácia s viacerými snímkami), dekódované cez `ImageDecoder` z WebCodecs, plus jednotlivé PNG pre kurzor. Konštanty `FRAME_W` / `FRAME_H` a `SPRITE_BASE` v ich kóde zodpovedajú našim `BUNKA` a sheetu.
+
+**Čo si z toho vziať:**
+
+1. **Pomenovanie `Smer_Animácia`** je čisté a škáluje. Prevezmime ho: `bike-city_right_ride.png`.
+2. **Izometrický pohľad** — potvrdené, že to nie je bočný pohľad.
+3. **Je toho veľa.** Ich produkcia má rádovo stovky ručne kreslených snímok. Naša prvá vlna 12 snímok je správne malá — najprv overiť, či to vôbec chceme, až potom kresliť.
+4. My máme oproti nim výhodu: **bicykle nemajú oči ani výrazy**, takže nám odpadá celá vetva `Expresions_*`.
+
 ### Prečo to nekopírujeme
 
 Three.js je ~600 KB. Vercel ho na stránke má aj kvôli iným 3D veciam, my by sme ho ťahali len kvôli dvadsiatim bicyklom. Rozbilo by to celý minimalistický prístup projektu.
