@@ -84,6 +84,9 @@
   <label>rýchlosť <span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></span></label>
   <label>veľkosť <span><input id="cMierka" type="range" min="10" max="50" value="20"><b id="vMierka">2.0</b></span></label>
   <label>pauzy <span><input id="cPauzy" type="range" min="0" max="100" value="45"><b id="vPauzy">45</b></span></label>
+  <label>sada grafiky <span><select id="cSada" style="background:#000;color:#fff;border:1px solid #fff4;font:inherit;padding:1px 4px">
+    <option value="v2">v2</option><option value="variant-2">variant-2</option><option value="v1">v1</option>
+  </select></span></label>
   <label>pozadie <span><select id="cPozadie" style="background:#000;color:#fff;border:1px solid #fff4;font:inherit;padding:1px 4px">
     <option value="rotacia">rotácia farieb</option>
     <option value="cierna">statická čierna</option>
@@ -95,7 +98,7 @@
   <label>rozdvojenie <input id="cSplit" type="checkbox" checked></label>
   <label>len hotové sprity <input id="cHotove" type="checkbox" checked></label>
   <label>hitboxy <input id="cHit" type="checkbox"></label>
-  <div class="pozn">Mestský bicykel je hotový. Cargo a velociped sú zatiaľ dočasné — vypni „len hotové sprity“, ak ich chceš vidieť. Klik = ťuknutie, ťahaním sa presúvajú. <b id="fps">–</b> fps</div>
+  <div class="pozn">Prepínaj sady grafiky a porovnávaj. Cargo a velociped ešte nemajú kresbu. Klik = ťuknutie, ťahaním sa presúvajú. <b id="fps">–</b> fps</div>
 </div>
 
 <script>
@@ -190,24 +193,25 @@ const platno = document.getElementById('plocha');
 const ctx = platno.getContext('2d');
 
 // ---------------------------------------------------------------------------
-// SHEETY — skutočná grafika od grafika, s dočasnou ako záložkou.
-// Nový typ = pridať riadok. Nič iné sa nemení.
+// SHEETY — dodané sady od grafika. Prepínajú sa v paneli.
+// Pridanie novej sady = jeden riadok v SADY. Nič iné sa nemení.
 // ---------------------------------------------------------------------------
 const docasny = docasnySheet();
-const SHEETY = {
-  mestsky:   {src:'assets/sprites/bike-city-v1.png', obraz:null},
-  cargo:     {src:null, obraz:null},        // čaká sa na grafika
-  velociped: {src:null, obraz:null},        // čaká sa na grafika
+const SADY = {
+  'v2':        'assets/sprites/bike-city-v2.png',
+  'variant-2': 'assets/sprites/bike-city-variant-2.png',
+  'v1':        'assets/sprites/bike-city-v1.png',
 };
-let hotovych = 0;
-for(const t in SHEETY){
-  const z = SHEETY[t]; if(!z.src) continue;
+const nacitane = {};
+for(const k in SADY){
   const i = new Image();
-  i.onload  = () => { z.obraz = i; hotovych++; };
-  i.onerror = () => console.warn('nepodarilo sa načítať', z.src);
-  i.src = z.src;
+  i.onload  = () => { nacitane[k] = i; };
+  i.onerror = () => console.warn('nepodarilo sa načítať', SADY[k]);
+  i.src = SADY[k];
 }
-const sheetPre = typ => (N.lenHotove ? SHEETY.mestsky.obraz : SHEETY[typ]?.obraz) || docasny;
+// cargo a velociped zatiaľ nemajú vlastnú grafiku – kreslia sa dočasnou
+const sheetPre = typ =>
+  (N.lenHotove || typ === 'mestsky') ? (nacitane[N.sada] || docasny) : docasny;
 
 let W=0, H=0, dpr=1;
 function prisposob(){
@@ -221,7 +225,7 @@ function prisposob(){
 addEventListener('resize', prisposob); prisposob();
 
 // --- nastavenia z panela ---
-const N = {pocet:18, rychlost:1, mierka:2, pauzy:.45, kurzor:false, vybuch:true, split:true, hit:false, lenHotove:true};
+const N = {pocet:18, rychlost:1, mierka:2, pauzy:.45, kurzor:false, vybuch:true, split:true, hit:false, lenHotove:true, sada:'v2'};
 
 const nah  = (a,b) => a + Math.random()*(b-a);
 const nahI = (a,b) => Math.floor(nah(a,b+1));
@@ -470,6 +474,9 @@ for(const [id,key] of [['cKurzor','kurzor'],['cVybuch','vybuch'],['cSplit','spli
   el.addEventListener('change', nastav); nastav();
 }
 // Režim pozadia. Bicykle o ňom nevedia – menia sa len CSS triedy na <body>.
+const selSada = $('cSada');
+selSada.addEventListener('change', () => { N.sada = selSada.value; });
+
 const selPozadie = $('cPozadie'), selTon = $('cTon');
 function nastavPozadie(){
   const v = selPozadie.value;

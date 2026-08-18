@@ -4,7 +4,7 @@ Priečinok na produktové nápady, ktoré ešte nie sú rozhodnuté ani rozpraco
 
 | Nápad | Stav |
 |---|---|
-| [01-bicykle-na-pozadi.md](01-bicykle-na-pozadi.md) | 🔨 Prototyp beží v `sandbox.html`, prvý mestský sprite draft je hotový |
+| [01-bicykle-na-pozadi.md](01-bicykle-na-pozadi.md) | 🔨 Prototyp beží v `sandbox.html`, dva mestské sprite varianty sú hotové |
 
 ## Ako to používať
 
