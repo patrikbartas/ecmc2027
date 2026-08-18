@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /sandbox.html
+
+Sitemap: https://ecmc2027.com/sitemap.xml

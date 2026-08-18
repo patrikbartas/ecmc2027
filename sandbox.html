@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ECMC 2027 — sandbox (bicykle)</title>
+<style>
+  :root{
+    --black:#000;--white:#fff;--red:#b2000e;--yellow:#fece00;--purple:#410056;--turquoise:#0ec9ae;
+    --cycle:60s;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:var(--black);
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    animation:bg var(--cycle) ease-in-out infinite;
+  }
+
+  /* Plocha, po ktorej bicykle chodia. Za obsahom. */
+  #plocha{position:fixed;inset:0;z-index:0;display:block;
+          animation:sprite var(--cycle) step-end infinite}
+  #plocha.chytam{cursor:grabbing}
+  #plocha.mozem-chytit{cursor:grab}
+  #plocha.vlastny-kurzor{cursor:none}
+
+  /* Logo v strede, rovnako ako na ostrej stránke */
+  .stred{position:fixed;inset:0;display:grid;place-items:center;z-index:1;pointer-events:none}
+  .logo{width:min(58vmin,360px);aspect-ratio:91.99/117.42;background-color:currentColor;
+        -webkit-mask:url(logo.svg) center/contain no-repeat;mask:url(logo.svg) center/contain no-repeat}
+  .stred{color:var(--white);animation:fg var(--cycle) step-end infinite}
+
+  @keyframes bg{
+    0%,8.33%    {background-color:var(--black)}
+    16.66%,25%  {background-color:var(--red)}
+    33.33%,41.66%{background-color:var(--yellow)}
+    50%,58.33%  {background-color:var(--purple)}
+    66.66%,75%  {background-color:var(--turquoise)}
+    83.33%,91.66%{background-color:var(--white)}
+    100%        {background-color:var(--black)}
+  }
+  @keyframes fg{
+    0%{color:var(--white)} 29.16%{color:var(--black)} 45.83%{color:var(--white)}
+    62.5%{color:var(--black)} 95.83%{color:var(--white)}
+  }
+  /* Sprity sú kreslené bielym. brightness(0) z nich spraví čierne, alfu nechá.
+     Rovnaké časovanie ako @keyframes fg – bicykle sa preklápajú spolu s logom. */
+  @keyframes sprite{
+    0%{filter:none} 29.16%{filter:brightness(0)} 45.83%{filter:none}
+    62.5%{filter:brightness(0)} 95.83%{filter:none}
+  }
+
+  /* --- ovládací panel --- */
+  #panel{position:fixed;top:10px;left:10px;z-index:9;background:#000c;color:#fff;
+         border:1px solid #fff4;padding:10px 12px;font-size:11px;line-height:1.9;
+         border-radius:6px;backdrop-filter:blur(6px);min-width:230px}
+  #panel h2{font-size:11px;letter-spacing:.1em;margin-bottom:6px;opacity:.6;font-weight:400}
+  #panel label{display:flex;align-items:center;gap:8px;justify-content:space-between;white-space:nowrap}
+  #panel input[type=range]{width:100px;accent-color:#fff}
+  #panel input[type=checkbox]{accent-color:#fff}
+  #panel b{font-variant-numeric:tabular-nums;min-width:34px;text-align:right;font-weight:400}
+  #panel .pozn{opacity:.5;font-size:10px;line-height:1.5;margin-top:8px;white-space:normal}
+  #panel.skryty > *:not(h2){display:none}
+</style>
+</head>
+<body>
+<canvas id="plocha"></canvas>
+<div class="stred"><div class="logo"></div></div>
+
+<div id="panel">
+  <h2>SANDBOX — H skryje panel</h2>
+  <label>počet <span><input id="cPocet" type="range" min="1" max="60" value="18"><b id="vPocet">18</b></span></label>
+  <label>rýchlosť <span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></span></label>
+  <label>veľkosť <span><input id="cMierka" type="range" min="10" max="50" value="20"><b id="vMierka">2.0</b></span></label>
+  <label>pauzy <span><input id="cPauzy" type="range" min="0" max="100" value="45"><b id="vPauzy">45</b></span></label>
+  <label>vlastný kurzor <input id="cKurzor" type="checkbox"></label>
+  <label>výbuchy <input id="cVybuch" type="checkbox" checked></label>
+  <label>rozdvojenie <input id="cSplit" type="checkbox" checked></label>
+  <label>hitboxy <input id="cHit" type="checkbox"></label>
+  <div class="pozn">Bicykle sú dočasné. Klik = ťuknutie, ťahaním sa presúvajú. <b id="fps">–</b> fps</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+// ---------------------------------------------------------------------------
+// FORMÁT SPRITE SHEETU — presne to, čo dostaneme od grafika.
+// Jeden PNG, bunky 48×48, snímky v riadku zľava doprava, riadok = smer.
+// Kreslené BIELYM na priehľadnom. Nakreslených 5 smerov, zvyšné 3 vzniknú preklopením.
+// ---------------------------------------------------------------------------
+const BUNKA = 48, SNIMOK = 4;
+const RIADOK = { E:0, S:1, N:2, SE:3, NE:4, TRACKSTAND:5 };
+// 8 sektorov po 45°, poradie zodpovedá atan2: 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE
+const SEKTOR = [
+  {r:RIADOK.E,  flip:false}, {r:RIADOK.SE, flip:false},
+  {r:RIADOK.S,  flip:false}, {r:RIADOK.SE, flip:true },
+  {r:RIADOK.E,  flip:true }, {r:RIADOK.NE, flip:true },
+  {r:RIADOK.N,  flip:false}, {r:RIADOK.NE, flip:false},
+];
+
+// ---------------------------------------------------------------------------
+// DOČASNÁ GRAFIKA — vygenerovaná kódom, aby sa dal mechanizmus skúšať bez grafika.
+// Až príde skutočný PNG, celá táto funkcia sa zmaže a nahradí načítaním obrázka.
+// ---------------------------------------------------------------------------
+function docasnySheet(){
+  const c = document.createElement('canvas');
+  c.width = BUNKA*SNIMOK; c.height = BUNKA*6;
+  const x = c.getContext('2d');
+  x.strokeStyle = '#fff'; x.fillStyle = '#fff'; x.lineWidth = 2; x.lineCap = 'round';
+
+  const koleso = (cx,cy,r,f,squash=1) => {
+    x.save(); x.translate(cx,cy); x.scale(squash,1);
+    x.beginPath(); x.arc(0,0,r,0,7); x.stroke();
+    for(let i=0;i<4;i++){                      // špice sa točia podľa snímky
+      const a = f*Math.PI/8 + i*Math.PI/2;
+      x.beginPath(); x.moveTo(0,0); x.lineTo(Math.cos(a)*r, Math.sin(a)*r); x.stroke();
+    }
+    x.restore();
+  };
+  const ciara = (x1,y1,x2,y2)=>{x.beginPath();x.moveTo(x1,y1);x.lineTo(x2,y2);x.stroke();};
+
+  for(let f=0; f<SNIMOK; f++){
+    const ox = f*BUNKA;
+    const kresli = (row, fn) => { x.save(); x.translate(ox, row*BUNKA); fn(); x.restore(); };
+
+    // E — čistý bok
+    kresli(RIADOK.E, () => {
+      koleso(13,33,9,f); koleso(35,33,9,f);
+      ciara(13,33,24,20); ciara(24,20,35,33); ciara(24,20,20,33); ciara(20,33,13,33);
+      ciara(24,20,28,14); ciara(24,14,32,14);           // riadidlá vpredu
+      ciara(17,18,22,18);                                // sedlo vzadu
+    });
+    // S — spredu, úzke
+    kresli(RIADOK.S, () => {
+      koleso(24,34,9,f,0.32);
+      ciara(24,26,24,14); ciara(15,14,33,14);            // riadidlá naprieč
+      ciara(24,26,24,30);
+    });
+    // N — zozadu, úzke
+    kresli(RIADOK.N, () => {
+      koleso(24,34,9,f,0.32);
+      ciara(24,26,24,17); ciara(19,17,29,17);            // sedlo naprieč
+    });
+    // SE — tričtvrte spredu
+    kresli(RIADOK.SE, () => {
+      koleso(30,36,8,f,0.7); koleso(18,26,7,f,0.55);
+      ciara(18,26,27,20); ciara(27,20,30,36); ciara(27,20,24,29);
+      ciara(27,20,31,16); ciara(26,15,35,18);
+    });
+    // NE — tričtvrte zozadu
+    kresli(RIADOK.NE, () => {
+      koleso(18,36,8,f,0.7); koleso(30,26,7,f,0.55);
+      ciara(30,26,21,20); ciara(21,20,18,36); ciara(21,20,25,29);
+      ciara(21,20,18,15); ciara(14,15,22,15);
+    });
+    // TRACKSTAND — bok, kýve sa dopredu-dozadu, kolesá stoja
+    kresli(RIADOK.TRACKSTAND, () => {
+      const nak = [0,-0.05,0,0.05][f];
+      x.save(); x.translate(24,33); x.rotate(nak); x.translate(-24,-33);
+      koleso(13,33,9,0); koleso(35,33,9,0);
+      ciara(13,33,24,20); ciara(24,20,35,33); ciara(24,20,20,33); ciara(20,33,13,33);
+      ciara(24,20,28,14); ciara(24,14,32,14); ciara(17,18,22,18);
+      x.restore();
+    });
+  }
+  return c;
+}
+
+// ---------------------------------------------------------------------------
+const platno = document.getElementById('plocha');
+const ctx = platno.getContext('2d');
+const sheet = docasnySheet();
+
+let W=0, H=0, dpr=1;
+function prisposob(){
+  dpr = Math.min(window.devicePixelRatio||1, 2);
+  W = innerWidth; H = innerHeight;
+  platno.width = Math.round(W*dpr); platno.height = Math.round(H*dpr);
+  platno.style.width = W+'px'; platno.style.height = H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.imageSmoothingEnabled = false;   // bez tohto sa pixel art rozmaže
+}
+addEventListener('resize', prisposob); prisposob();
+
+// --- nastavenia z panela ---
+const N = {pocet:18, rychlost:1, mierka:2, pauzy:.45, kurzor:false, vybuch:true, split:true, hit:false};
+
+const nah  = (a,b) => a + Math.random()*(b-a);
+const nahI = (a,b) => Math.floor(nah(a,b+1));
+
+// ---------------------------------------------------------------------------
+// BICYKEL — stavový automat
+// ---------------------------------------------------------------------------
+const TYPY = ['cargo','mestsky','velociped'];   // zatiaľ sa líšia len veľkosťou
+let bicykle = [], castice = [], cakajuNaObnovu = 0;
+
+function novy(x, y){
+  const b = {
+    x: x ?? nah(0,W), y: y ?? nah(0,H),
+    typ: TYPY[nahI(0,TYPY.length-1)],
+    dx:0, dy:0, stav:'stoji', cas:0, snimka:0, snimkaCas:0,
+    vlastnaRychlost: nah(.8,1.25), drzany:false, mrka:0,
+  };
+  zmenStav(b, Math.random()<.5 ? 'ide' : 'stoji');
+  b.cas = nah(0,2);                              // rozhádzať štarty, nech nejdú naraz
+  return b;
+}
+
+function zmenStav(b, stav){
+  b.stav = stav; b.snimka = 0; b.snimkaCas = 0;
+  if(stav === 'ide'){
+    const uhol = smerVon(b);
+    b.dx = Math.cos(uhol); b.dy = Math.sin(uhol);
+    b.cas = nah(2,7);                            // náhodné trvanie, nie pevný interval
+  } else if(stav === 'stoji'){
+    b.cas = nah(1,5);
+  }
+}
+
+// Ak je bicykel pri kraji, nový smer mieri späť do plochy. Inak náhodne, ale
+// nikdy nie o 180° — to vyzerá ako porucha.
+function smerVon(b){
+  const okraj = 60;
+  if(b.x<okraj || b.x>W-okraj || b.y<okraj || b.y>H-okraj){
+    return Math.atan2(H/2-b.y, W/2-b.x) + nah(-.5,.5);
+  }
+  const teraz = Math.atan2(b.dy, b.dx);
+  const zmena = (Math.random()<.5?-1:1) * nah(Math.PI/4, Math.PI*.75);
+  return (b.dx||b.dy) ? teraz+zmena : nah(0, Math.PI*2);
+}
+
+function vybuchni(b){
+  for(let i=0;i<14;i++){
+    const a = nah(0,Math.PI*2), v = nah(30,150);
+    castice.push({x:b.x, y:b.y, dx:Math.cos(a)*v, dy:Math.sin(a)*v, zivot:nah(.4,.9), max:.9, r:nah(1,2.5)});
+  }
+  bicykle.splice(bicykle.indexOf(b),1);
+  cakajuNaObnovu++;
+  setTimeout(() => {                              // po výbuchu musí prísť náhrada,
+    if(cakajuNaObnovu>0){ cakajuNaObnovu--;       // inak sa stránka časom vyprázdni
+      const zKraja = Math.random()<.5;
+      bicykle.push(novy(zKraja?nah(0,W):(Math.random()<.5?-30:W+30), zKraja?(Math.random()<.5?-30:H+30):nah(0,H)));
+    }
+  }, nah(1500,4000));
+}
+
+function rozdvoj(b){
+  const a = Math.atan2(b.dy,b.dx);
+  for(const s of [-1,1]){
+    const n = novy(b.x, b.y);
+    n.typ = TYPY[nahI(0,TYPY.length-1)];
+    zmenStav(n,'ide');
+    n.dx = Math.cos(a+s*.9); n.dy = Math.sin(a+s*.9);
+    bicykle.push(n);
+  }
+  for(let i=0;i<6;i++){
+    const u=nah(0,Math.PI*2), v=nah(20,60);
+    castice.push({x:b.x,y:b.y,dx:Math.cos(u)*v,dy:Math.sin(u)*v,zivot:.35,max:.35,r:1.5});
+  }
+  bicykle.splice(bicykle.indexOf(b),1);
+}
+
+function mierkaTypu(t){ return t==='cargo'?1.15 : t==='velociped'?1.1 : .95; }
+function polomer(b){ return BUNKA*.42*N.mierka*mierkaTypu(b.typ); }
+
+// ---------------------------------------------------------------------------
+function update(dt){
+  // doplniť / ubrať podľa nastaveného počtu
+  while(bicykle.length + cakajuNaObnovu < N.pocet) bicykle.push(novy());
+  while(bicykle.length > N.pocet) bicykle.pop();
+
+  for(const b of bicykle){
+    if(b.drzany) continue;
+
+    b.cas -= dt;
+    if(b.cas <= 0){
+      if(b.stav === 'ide'){
+        // po jazde buď pauza, alebo (vzácne) niečo nečakané
+        const r = Math.random();
+        if(N.vybuch && r < .05){ vybuchni(b); continue; }
+        if(N.split  && r < .10){ rozdvoj(b);  continue; }
+        zmenStav(b, Math.random() < N.pauzy ? 'stoji' : 'ide');
+      } else {
+        zmenStav(b,'ide');
+      }
+    }
+
+    if(b.stav === 'ide'){
+      const v = 34 * N.rychlost * b.vlastnaRychlost;
+      b.x += b.dx*v*dt; b.y += b.dy*v*dt;
+      const m = polomer(b);
+      if(b.x<-m||b.x>W+m||b.y<-m||b.y>H+m) zmenStav(b,'ide');   // stočí sa späť
+    }
+
+    if(b.mrka > 0) b.mrka -= dt;
+
+    // posun snímky – jazda rýchlejšie, trackstand pomalšie
+    const tempo = b.stav==='ide' ? .11/Math.max(.35,N.rychlost*b.vlastnaRychlost) : .22;
+    b.snimkaCas += dt;
+    if(b.snimkaCas >= tempo){ b.snimkaCas = 0; b.snimka = (b.snimka+1) % SNIMOK; }
+  }
+
+  for(let i=castice.length-1;i>=0;i--){
+    const c = castice[i];
+    c.x += c.dx*dt; c.y += c.dy*dt; c.dx *= .94; c.dy *= .94;
+    c.zivot -= dt; if(c.zivot<=0) castice.splice(i,1);
+  }
+}
+
+function kresli(){
+  ctx.clearRect(0,0,W,H);
+
+  // KĽÚČOVÉ pre dojem plochy: kto je nižšie, kreslí sa navrch
+  const zoradene = bicykle.slice().sort((a,b)=>a.y-b.y);
+
+  for(const b of zoradene){
+    const s = N.mierka * mierkaTypu(b.typ), d = BUNKA*s;
+    let riadok, flip = false;
+    if(b.stav === 'stoji' && !b.drzany){
+      riadok = RIADOK.TRACKSTAND;
+      flip = (b.dx < 0);
+    } else {
+      const sekt = ((Math.round(Math.atan2(b.dy,b.dx)/(Math.PI/4)) % 8) + 8) % 8;
+      const m = SEKTOR[sekt]; riadok = m.r; flip = m.flip;
+    }
+    const snimka = b.drzany ? 0 : b.snimka;
+
+    ctx.save();
+    ctx.translate(Math.round(b.x), Math.round(b.y));
+    if(b.drzany) ctx.translate(0,-6);              // zdvihnutý nad plochu
+    if(flip) ctx.scale(-1,1);
+    if(b.mrka > 0) ctx.globalAlpha = (Math.floor(b.mrka*20)%2) ? .35 : 1;
+    ctx.drawImage(sheet, snimka*BUNKA, riadok*BUNKA, BUNKA, BUNKA, -d/2, -d/2, d, d);
+    ctx.restore();
+
+    if(N.hit){
+      ctx.strokeStyle='#f0f'; ctx.lineWidth=1;
+      ctx.strokeRect(b.x-polomer(b), b.y-polomer(b), polomer(b)*2, polomer(b)*2);
+    }
+  }
+
+  ctx.fillStyle = '#fff';
+  for(const c of castice){
+    ctx.globalAlpha = Math.max(0, c.zivot/c.max);
+    ctx.fillRect(Math.round(c.x-c.r), Math.round(c.y-c.r), c.r*2, c.r*2);
+  }
+  ctx.globalAlpha = 1;
+
+  if(N.kurzor && kurzor.vnutri) kresliKurzor();
+}
+
+// Vlastný kurzor – dočasná rukavica. Vercel to robí rovnako: cursor:none + kreslí si vlastný.
+const kurzor = {x:0, y:0, vnutri:false, zovrety:false};
+function kresliKurzor(){
+  const {x,y,zovrety} = kurzor;
+  ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(N.mierka*.8, N.mierka*.8);
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+  if(zovrety){ ctx.fillRect(-4,-3,8,7); ctx.fillRect(-5,0,10,4); }
+  else { ctx.fillRect(-4,-1,8,6); ctx.fillRect(-3,-6,2,6); ctx.fillRect(-.5,-7,2,7); ctx.fillRect(2,-6,2,6); }
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------------------
+// Myš: hover / ťahanie / klik
+// ---------------------------------------------------------------------------
+function podKurzorom(px,py){
+  for(let i=bicykle.length-1;i>=0;i--){          // odzadu = najvrchnejší
+    const b = bicykle[i], m = polomer(b);
+    if(Math.abs(px-b.x)<m && Math.abs(py-b.y)<m) return b;
+  }
+  return null;
+}
+let tahany = null, tahaneOd = null, poslednaPoloha = null;
+
+platno.addEventListener('pointermove', e => {
+  kurzor.x = e.clientX; kurzor.y = e.clientY; kurzor.vnutri = true;
+  if(tahany){
+    if(poslednaPoloha){ tahany.dx = e.clientX-poslednaPoloha.x; tahany.dy = e.clientY-poslednaPoloha.y; }
+    poslednaPoloha = {x:e.clientX, y:e.clientY};
+    tahany.x = e.clientX; tahany.y = e.clientY;
+    return;
+  }
+  platno.classList.toggle('mozem-chytit', !N.kurzor && !!podKurzorom(e.clientX,e.clientY));
+});
+platno.addEventListener('pointerleave', () => { kurzor.vnutri = false; });
+
+platno.addEventListener('pointerdown', e => {
+  const b = podKurzorom(e.clientX, e.clientY);
+  if(!b) return;
+  tahany = b; b.drzany = true; kurzor.zovrety = true;
+  tahaneOd = {x:e.clientX, y:e.clientY, t:performance.now()};
+  poslednaPoloha = {x:e.clientX, y:e.clientY};
+  platno.setPointerCapture(e.pointerId);
+  platno.classList.add('chytam');
+});
+
+addEventListener('pointerup', e => {
+  if(!tahany) return;
+  const b = tahany;
+  const posun = Math.hypot(e.clientX-tahaneOd.x, e.clientY-tahaneOd.y);
+  b.drzany = false; kurzor.zovrety = false;
+  platno.classList.remove('chytam');
+  if(posun < 5){                                  // klik bez posunu = ťuknutie
+    b.mrka = .45;
+    zmenStav(b,'stoji'); b.cas = .8;
+  } else {                                        // hodenie – letí ďalej v smere ťahu
+    const dl = Math.hypot(b.dx,b.dy) || 1;
+    b.dx /= dl; b.dy /= dl;
+    zmenStav(b,'ide');
+    b.dx = (e.clientX-poslednaPoloha.x)||b.dx; b.dy = (e.clientY-poslednaPoloha.y)||b.dy;
+    const l = Math.hypot(b.dx,b.dy)||1; b.dx/=l; b.dy/=l;
+  }
+  tahany = null;
+});
+
+// ---------------------------------------------------------------------------
+// Panel
+// ---------------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const naviaz = (id, out, key, prevod, fmt) => {
+  const el = $(id);
+  const nastav = () => { N[key] = prevod(+el.value); if(out) $(out).textContent = fmt(+el.value); };
+  el.addEventListener('input', nastav); nastav();
+};
+naviaz('cPocet','vPocet','pocet', v=>v, v=>v);
+naviaz('cRychlost','vRychlost','rychlost', v=>v/100, v=>(v/100).toFixed(1));
+naviaz('cMierka','vMierka','mierka', v=>v/10, v=>(v/10).toFixed(1));
+naviaz('cPauzy','vPauzy','pauzy', v=>v/100, v=>v);
+for(const [id,key] of [['cKurzor','kurzor'],['cVybuch','vybuch'],['cSplit','split'],['cHit','hit']]){
+  const el = $(id);
+  const nastav = () => { N[key] = el.checked; if(key==='kurzor') platno.classList.toggle('vlastny-kurzor', el.checked); };
+  el.addEventListener('change', nastav); nastav();
+}
+addEventListener('keydown', e => { if(e.key==='h'||e.key==='H') $('panel').classList.toggle('skryty'); });
+
+// ---------------------------------------------------------------------------
+let posledny = performance.now(), fpsAkum = 0, fpsPocet = 0;
+function slucka(teraz){
+  const dt = Math.min((teraz-posledny)/1000, .05);   // strop, aby to po prepnutí tabu neposkočilo
+  posledny = teraz;
+  update(dt); kresli();
+  fpsAkum += dt; fpsPocet++;
+  if(fpsAkum >= .5){ $('fps').textContent = Math.round(fpsPocet/fpsAkum); fpsAkum = 0; fpsPocet = 0; }
+  requestAnimationFrame(slucka);
+}
+requestAnimationFrame(slucka);
+})();
+</script>
+</body>
+</html>

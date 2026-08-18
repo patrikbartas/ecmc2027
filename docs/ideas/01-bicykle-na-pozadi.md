@@ -1,7 +1,8 @@
 # Pixelové bicykle na pozadí
 
-**Stav:** 💡 Nápad — zapísané 18. 8. 2026, čaká na grafiku a rozhodnutie
-**Prototyp:** ešte nezaložený, plánovaný ako `sandbox.html`
+**Stav:** 🔨 Prototyp — založený 18. 8. 2026
+**Kde:** [`sandbox.html`](../../sandbox.html) → živé na [ecmc2027.com/sandbox.html](https://ecmc2027.com/sandbox.html)
+**Grafika:** zatiaľ dočasná, generovaná kódom. Čaká sa na sprity od grafika.
 
 ## O čo ide
 
@@ -188,6 +189,40 @@ Keď to bude hotové a odsúhlasené, presunie sa to do `index.html`.
 - **Vlastný kurzor?** Rukavica ako u Vercelu, alebo len `cursor: grab`? Vlastný vyzerá lepšie, ale je to ďalší grafický podklad.
 - **`prefers-reduced-motion`** — pri zapnutom nastavení animáciu vypnúť. To je povinnosť, nie voľba.
 
+## Stav prototypu
+
+Postavené a funkčné v `sandbox.html`:
+
+- ✅ 8 smerov pohybu, sprite vyberaný podľa uhla, 3 smery preklápané
+- ✅ Zoradenie podľa `y` — kto je nižšie, kreslí sa navrch
+- ✅ Stavový automat jazda ↔ trackstand, náhodné trvania
+- ✅ Chytenie a ťahanie myšou, hodenie zotrvačnosťou
+- ✅ Klik = ťuknutie (bicykel blikne a zastane)
+- ✅ Rozdvojenie a výbuch s časticami + automatická náhrada
+- ✅ Vlastný kurzor (`cursor:none` + kreslená rukavica), prepínateľný
+- ✅ Prefarbovanie na čiernu/bielu spolu s pozadím cez `filter: brightness(0)`
+- ✅ `devicePixelRatio`, `imageSmoothingEnabled=false`
+- ✅ Ovládací panel na ladenie počtu, rýchlosti, veľkosti a pauzy (klávesa **H** ho skryje)
+
+Namerané ~120 fps pri 18 bicykloch.
+
+### Dočasná grafika
+
+Sprity sú zatiaľ **generované kódom** vo funkcii `docasnySheet()`. Kreslí presne ten formát,
+ktorý čakáme od grafika: bunky 48×48, 4 snímky v riadku, 6 riadkov (5 smerov + trackstand),
+biele na priehľadnom.
+
+**Až prídu skutočné PNG, zmaže sa celá funkcia `docasnySheet()`** a nahradí načítaním obrázka.
+Zvyšok kódu sa nemení — konštanty `BUNKA`, `SNIMOK`, `RIADOK` a `SEKTOR` ostávajú.
+
+### Čo ešte nie je
+
+- Bicykle na seba nereagujú, prechádzajú cez seba
+- Všetky tri typy vyzerajú rovnako, líšia sa len veľkosťou (dočasná grafika)
+- Nie je doriešené správanie na mobile
+- `prefers-reduced-motion` sa zatiaľ nerešpektuje (v sandboxe zámerne, na ostrej stránke bude musieť)
+
 ## Ďalší krok
 
-Až príde na to čas, viem spraviť **prototyp s dočasnými štvorcami namiesto bicyklov** — aby sa dal vyskúšať pohyb, ťahanie a pocit z toho skôr, než grafik čokoľvek nakreslí. Keď prídu sprity, len sa vymenia súbory.
+Vyskúšať naživo, doladiť počet a rýchlosť posuvníkmi, a povedať čo zmeniť.
+Až potom má zmysel zadávať grafikovi prvú vlnu spritov.

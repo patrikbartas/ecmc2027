@@ -4,7 +4,7 @@ Priečinok na produktové nápady, ktoré ešte nie sú rozhodnuté ani rozpraco
 
 | Nápad | Stav |
 |---|---|
-| [01-bicykle-na-pozadi.md](01-bicykle-na-pozadi.md) | 💡 Nápad zapísaný, čaká na grafiku a rozhodnutie |
+| [01-bicykle-na-pozadi.md](01-bicykle-na-pozadi.md) | 🔨 Prototyp beží v `sandbox.html`, čaká na sprity od grafika |
 
 ## Ako to používať
 
