@@ -82,9 +82,15 @@
     62.5%   {filter:brightness(0)}
     95.83%  {filter:none}
   }
+  /* Pri zapnutom obmedzení pohybu v systéme sa farby netočia. Namiesto jednej
+     natvrdo zvolenej farby sa stránka riadi svetlým/tmavým režimom systému. */
   @media (prefers-reduced-motion:reduce){
     body,a,#plocha{animation:none}
-    body{background:var(--purple)}
+    body{background:var(--white)}
+    a{color:var(--black)}
+  }
+  @media (prefers-reduced-motion:reduce) and (prefers-color-scheme:dark){
+    body{background:var(--black)}
     a{color:var(--white)}
   }
 </style>

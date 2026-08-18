@@ -46,6 +46,9 @@ Prvý deň projektu. Od prázdneho priečinka po hotovú landing page s animáci
 - Všetky bicykle sa vykresľujú v rovnakej mierke; rozdiel medzi typmi robí kresba
 - Mestský bicykel: použitá verzia `variant-2` (jemnejší rám)
 - Cargo: nahradené novšou verziou s presnejšou nákladnou plošinou
+- Pri zapnutom systémovom obmedzení pohybu (iOS „Obmedziť pohyb", Android
+  „Odstrániť animácie") už stránka nezamrzne na fialovej. Riadi sa svetlým/tmavým
+  režimom systému — tmavý dá čierne pozadie a biele logo, svetlý naopak.
 
 ### Odstránené
 
