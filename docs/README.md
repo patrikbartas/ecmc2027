@@ -21,3 +21,9 @@ Znalostná báza k projektu. Cieľ: aby sa dal web stavať bez toho, aby si mi z
 ## Konvencia
 
 Fakty overené zo zdroja sú písané normálne. Veci, ktoré som **neoveril** alebo sú dohad, sú označené `⚠️ neoverené`.
+
+## Poznámka k otvorenosti
+
+Repo je verejné zámerne. Cieľom je, aby si organizátori budúcich ročníkov mohli vziať kód aj tieto poznámky ako východisko a nezačínali od nuly — tak, ako sme my čerpali zo Salzburgu 2025 a Berlína 2026.
+
+Preto sú tieto dokumenty písané tak, aby ich mohol čítať ktokoľvek z komunity vrátane predchádzajúcich organizátorov. Interné veci (rozpočty, zmluvy, osobné údaje) sem nepatria.

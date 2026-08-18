@@ -82,7 +82,7 @@ Odporúčam **MapLibre GL + OpenStreetMap dlaždice** namiesto Google Maps:
 ### Čo NEodporúčam
 
 - **CMS hneď na začiatku** — kým je obsahu málo, je to réžia navyše. Ak bude treba, `.md` súbory v repe alebo neskôr Sanity.
-- **Squarespace / Wix** — Berlín aj Salzburg to tak mali a na tom stroskotali (PDF-ká, externý ticketing).
+- **Hotové šablóny (Squarespace / Wix)** — rýchly štart, ale narazíme na ne presne tam, kde chceme ísť ďalej: vlastná registrácia, mapa, filtrovateľný timetable. Ak by web nemal mať interaktívne časti, bola by to úplne legitímna voľba.
 - Riešiť live výsledky skôr, než bude existovať program.
 
 ## Farebná identita

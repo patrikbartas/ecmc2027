@@ -81,7 +81,7 @@ Rovnako dôležitý ako preteky:
 Čo z toho vyplýva pre štruktúru webu:
 
 1. **Program musí uniesť dva paralelné prúdy** — športový (preteky, kvalifikácie, finále) a sociálny (rides, workshopy, párty). Salzburg aj Berlín to mali ako `/program` s podstránkami.
-2. **Timetable je kritický artefakt** — 4 dni × viac miest × viac disciplín naraz. Berlín naň odkazoval z FAQ, ale nemal ho priamo na stránke, čo je slabina.
+2. **Timetable je kritický artefakt** — 4 dni × viac miest × viac disciplín naraz. Ľudia ho otvárajú na mobile priamo počas podujatia, takže patrí na web, nie do PDF alebo mimo stránku.
 3. **Mapa** — main race sa deje v reálnych uliciach, plus HQ, plus miesta vedľajších disciplín, plus párty. Toto je najsilnejší argument pre interaktívnu mapu.
 4. **Výsledky** — potrebujeme stránku na výsledky po jednotlivých disciplínach. Salzburg mal `/results/`.
 5. **Registrácia musí vedieť kategórie** — bicykel × WTNB/Open, plus cargo, plus ubytovanie ako samostatná položka.
