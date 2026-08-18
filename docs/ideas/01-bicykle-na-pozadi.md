@@ -2,7 +2,7 @@
 
 **Stav:** 🔨 Prototyp — založený 18. 8. 2026
 **Kde:** [`sandbox.html`](../../sandbox.html) → živé na [ecmc2027.com/sandbox.html](https://ecmc2027.com/sandbox.html)
-**Grafika:** sandbox zatiaľ používa dočasnú grafiku generovanú kódom. Na porovnanie existujú dva mestské sprite drafty: [`bike-city-v2.png`](../../assets/sprites/bike-city-v2.png) (variant 1) a [`bike-city-variant-2.png`](../../assets/sprites/bike-city-variant-2.png) (variant 2).
+**Grafika:** vybraný je vizuálny smer `variant-2`. Finálna trojica je [`bike-city.png`](../../assets/sprites/bike-city.png), [`bike-velociped.png`](../../assets/sprites/bike-velociped.png) a [`bike-cargo.png`](../../assets/sprites/bike-cargo.png). Sandbox ich ešte nemá zapojené.
 
 ## O čo ide
 
@@ -320,15 +320,16 @@ nula poloprehľadných pixelov. Líšia sa hustotou kresby:
 | **v2** | **9 694** | **plné a jasné** | **plné a jasné** |
 | variant-2 | 8 734 | plné, elegantnejšie | ⚠️ príliš tenké |
 
-**Odporúčanie: v2.** Jediná sada, ktorá drží čitateľnosť aj v úzkych pohľadoch spredu a zozadu.
-Riadky 1 a 2 majú u variant-2 len 200 a 192 px oproti 314 a 297 u v2 — v pohybe sa z nich
-stáva nečitateľná palička.
+**Rozhodnutie Patrika 18. 8. 2026: vybraný je variant-2.** Je hranatejší, pokojnejší a má
+najlepší celkový charakter. Jeho vizuálny jazyk sa preto použil aj pre cargo a velociped.
 
-**Ak sa páči štýl variant-2**, dá sa použiť — ale grafik by musel zosilniť riadky 1 a 2
-(pohľad spredu a zozadu) na úroveň v2. Bok a šikmé smery má variant-2 podľa mňa krajšie.
+Finálna rodina:
 
-**Toto je vzor pre ďalšie dodávky.** Cargo a velociped stačí urobiť rovnako a pomenovať
-`bike-cargo-v1.png` a `bike-penny-v1.png`.
+| Typ | Súbor | Rozlišovací znak |
+|---|---|---|
+| mestský | `bike-city.png` | kompaktný diamond frame, rovnako veľké kolesá |
+| velociped | `bike-velociped.png` | veľké predné a malé zadné koleso |
+| cargo | `bike-cargo.png` | normálne zadné, menšie predné koleso a nízka plošina |
 
 ### Dočasná grafika
 
@@ -338,30 +339,17 @@ biele na priehľadnom.
 
 V paneli je **prepínač sady grafiky** (v2 / variant-2 / v1), aby sa dali porovnávať v pohybe.
 
-Dočasná grafika **ostáva ako záložka** pre typy, ktoré ešte nie sú dodané. V paneli je prepínač
-**„len hotové sprity"** — zapnutý ukazuje všetky bicykle ako mestský, vypnutý domieša dočasné
-cargo a velociped, aby bolo vidieť, čo ešte chýba.
-
-Pridanie ďalšieho typu = jeden riadok v objekte `SHEETY` v `sandbox.html`. Nič iné.
-
-Na porovnanie sú dva kandidáti s rovnakým technickým formátom:
-
-- `assets/sprites/bike-city-v2.png` — variant 1, jemnejšia kresba
-- `assets/sprites/bike-city-variant-2.png` — variant 2, hranatejšia kresba a robustnejšie špice
-
-Oba majú 4 × 6 buniek po 48 × 48 px a biely 1-bit pixel art na priehľadnom pozadí. Vybraný
-variant sa do sandboxu zapojí až po vizuálnom odsúhlasení, aby dočasná kresba ostala bezpečný
-fallback.
+Dočasná grafika ostáva už iba ako bezpečný fallback. Všetky tri typy majú finálne PNG s rovnakým
+formátom: 4 × 6 buniek po 48 × 48 px, biely 1-bit pixel art na priehľadnom pozadí.
 
 ### Čo ešte nie je
 
 - Bicykle na seba nereagujú, prechádzajú cez seba
-- Cargo a velociped ešte nemajú grafiku
+- Finálna trojica spritov ešte nie je zapojená do sandboxu
 - Nie je doriešené správanie na mobile
 - `prefers-reduced-motion` sa zatiaľ nerešpektuje (v sandboxe zámerne, na ostrej stránke bude musieť)
 
 ## Ďalší krok
 
-Porovnať oba mestské varianty a vybrať ďalší vizuálny smer. Potom ho zapojiť do sandboxu,
-vyskúšať naživo a doladiť počet, rýchlosť a mierku posuvníkmi. Až po tomto teste má zmysel
-dokresľovať cargo, velociped a pokročilé animácie.
+Zapojiť tri finálne PNG do sandboxu, vyskúšať ich spolu naživo a doladiť počet, rýchlosť a
+mierku posuvníkmi. Až potom riešiť pokročilé animácie.
