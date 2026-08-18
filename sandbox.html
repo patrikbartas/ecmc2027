@@ -44,6 +44,16 @@
     0%{color:var(--white)} 29.16%{color:var(--black)} 45.83%{color:var(--white)}
     62.5%{color:var(--black)} 95.83%{color:var(--white)}
   }
+  /* --- STATICKÉ REŽIMY ---
+     Celý systém bicyklov je nezávislý od farebnej animácie. Keď sa raz rozhodneme
+     rotáciu farieb zrušiť, stačí nechať zapnutý statický režim – v kóde bicyklov
+     sa nemení nič. */
+  body.stat #plocha{animation:none;filter:brightness(var(--ton,.4))}
+  body.stat .stred{animation:none}
+  body.stat{animation:none}
+  body.stat-cierna{background:var(--black)}  body.stat-cierna .stred{color:var(--white)}
+  body.stat-biela {background:var(--white)}  body.stat-biela  .stred{color:var(--black)}
+
   /* Sprity sú kreslené bielym. brightness(0) z nich spraví čierne, alfu nechá.
      Rovnaké časovanie ako @keyframes fg – bicykle sa preklápajú spolu s logom. */
   @keyframes sprite{
@@ -74,6 +84,12 @@
   <label>rýchlosť <span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></span></label>
   <label>veľkosť <span><input id="cMierka" type="range" min="10" max="50" value="20"><b id="vMierka">2.0</b></span></label>
   <label>pauzy <span><input id="cPauzy" type="range" min="0" max="100" value="45"><b id="vPauzy">45</b></span></label>
+  <label>pozadie <span><select id="cPozadie" style="background:#000;color:#fff;border:1px solid #fff4;font:inherit;padding:1px 4px">
+    <option value="rotacia">rotácia farieb</option>
+    <option value="cierna">statická čierna</option>
+    <option value="biela">statická biela</option>
+  </select></span></label>
+  <label>tón bicyklov <span><input id="cTon" type="range" min="5" max="100" value="40"><b id="vTon">40</b></span></label>
   <label>vlastný kurzor <input id="cKurzor" type="checkbox"></label>
   <label>výbuchy <input id="cVybuch" type="checkbox" checked></label>
   <label>rozdvojenie <input id="cSplit" type="checkbox" checked></label>
@@ -433,6 +449,21 @@ for(const [id,key] of [['cKurzor','kurzor'],['cVybuch','vybuch'],['cSplit','spli
   const nastav = () => { N[key] = el.checked; if(key==='kurzor') platno.classList.toggle('vlastny-kurzor', el.checked); };
   el.addEventListener('change', nastav); nastav();
 }
+// Režim pozadia. Bicykle o ňom nevedia – menia sa len CSS triedy na <body>.
+const selPozadie = $('cPozadie'), selTon = $('cTon');
+function nastavPozadie(){
+  const v = selPozadie.value;
+  document.body.classList.toggle('stat', v !== 'rotacia');
+  document.body.classList.toggle('stat-cierna', v === 'cierna');
+  document.body.classList.toggle('stat-biela',  v === 'biela');
+  document.body.style.setProperty('--ton', (+selTon.value)/100);
+  $('vTon').textContent = selTon.value;
+  selTon.parentElement.parentElement.style.opacity = (v === 'rotacia') ? .35 : 1;
+}
+selPozadie.addEventListener('change', nastavPozadie);
+selTon.addEventListener('input', nastavPozadie);
+nastavPozadie();
+
 addEventListener('keydown', e => { if(e.key==='h'||e.key==='H') $('panel').classList.toggle('skryty'); });
 
 // ---------------------------------------------------------------------------

@@ -124,11 +124,13 @@ Stavy, medzi ktorými bicykel prepína. Priorita = čo stavať najskôr.
 | **Státie (trackstand)** | Stojí na mieste a kýve sa dopredu-dozadu, ako pri trackstande | 🔴 základ |
 | **Otočenie** | Zmena smeru | 🔴 základ |
 | **Chytenie a ťahanie** | Dá sa chytiť myšou a presunúť inam | 🟡 dôležité |
-| **Bliknutie svetla** | Predné svetlo krátko blikne | 🟢 neskôr |
 | **Rozdvojenie** | Bicykel sa rozdelí na dva iné typy | 🟢 neskôr |
 | **Pád a výbuch** | Spadne na zem, „vybuchne" a zmizne | 🟢 neskôr |
 
 **Trackstand ako idle** je najlepší z nich — je to reálna disciplína ECMC, takže to nie je len ozdoba, ale odkaz na podujatie. Kto vie o čo ide, ocení to; kto nie, vidí len že sa bicykel pekne kýve.
+
+❌ **Bliknutie svetla — zamietnuté 18. 8. 2026.** Bicykle sú monochromatické a svetlo by do toho
+ťahalo farbu, ktorá tam nepatrí. Neriešiť.
 
 **Pád a výbuch** potrebuje domyslieť: ak bicykle miznú, musia sa aj dopĺňať, inak sa stránka časom vyprázdni. Riešenie: po výbuchu sa po pár sekundách niekde na kraji objaví nový.
 
@@ -145,6 +147,17 @@ Toto je najdlhšia položka celého nápadu, tak nech to vie zavčasu. Nič z to
 - Všetky snímky **presne rovnako veľké** — kód ich reže podľa pevnej mriežky
 - **Priehľadné pozadie** (žiadna biela plocha)
 - Pomenovanie: `bike-cargo.png`, `bike-city.png`, `bike-velociped.png`
+
+### Veľkosť — všetky rovnako
+
+Všetky tri typy bicyklov sa v kóde vykresľujú **v rovnakej mierke**. Rozdiel medzi nimi musí
+vzniknúť **v kresbe**, nie zväčšovaním:
+
+- **mestský** — referenčná veľkosť
+- **velociped** — o niečo vyšší (veľké predné koleso)
+- **cargo** — o niečo dlhší (predĺžený rám, debna vpredu)
+
+Kresliť ich teda do rovnakej bunky, ale s rôznymi proporciami. Kód ich nebude škálovať.
 
 ### Rozmery
 
@@ -168,16 +181,27 @@ Počty sú **na jeden smer**. Pri piatich kreslených smeroch treba vynásobiť 
 |---|---|---|---|---|
 | Jazda | **4** | 5 | **20** | Otáčanie kolies — špice v 4 fázach, aby sa to plynulo opakovalo |
 | Trackstand | **4** | 1–2 | 4–8 | Kývanie na mieste, mierny náklon dopredu-dozadu |
-| Bliknutie svetla | 2 | 1–2 | 2–4 | Svetlo zhasnuté / rozsvietené |
 | Pád a výbuch | 4–6 | 1 | 4–6 | Náklon → pád → rozpad → nič |
 
 **Trackstand a výbuch nepotrebujú všetkých 5 smerov** — sú krátke a oko si smer nevšimne. Netreba to prekresľovať päťkrát.
 
 ### Smery — najväčšia časť práce, čítať pozorne
 
-Bicykle sa hýbu do **8 smerov** (4 hlavné + 4 šikmé). To ale **neznamená 8 sád kresieb** — polovica sa vyrobí preklopením v kóde.
+**Cieľ je 8 smerov pre všetky 3 typy bicyklov** (4 hlavné + 4 šikmé). Bez toho to nebude
+pôsobiť živo — potvrdené 18. 8. 2026.
 
-**Nakresliť treba 5 smerov:**
+Existujú dve cesty, ako sa k tým 8 smerom dostať. **Rozhodne grafik:**
+
+**A) Nakresliť všetkých 8** — 3 bicykle × 8 smerov = 24 sád. Najviac práce, ale plná kontrola
+nad detailmi (reťaz a prehadzovačka sú na skutočnom bicykli vždy vpravo).
+
+**B) Nakresliť 5 a zvyšné 3 preklopiť kódom** — 3 bicykle × 5 smerov = 15 sád, teda o 40 % menej
+práce. Podmienka: bicykel nesmie mať nič, čo sa preklopením pokazí (nápis, taška na jednej strane,
+reťaz). Pri štylizovanom pixel arte to väčšinou nevadí.
+
+Kód vie oboje, mapovanie je v konštante `SEKTOR` v `sandbox.html`.
+
+**Ak sa ide cestou B, kresliť týchto 5 smerov:**
 
 | Smer | Čo je vidieť | Preklopením vznikne |
 |---|---|---|
@@ -199,6 +223,28 @@ Je toho dosť, tak to rozdeľme:
 2. **Druhá vlna:** dokresliť šikmé smery.
 3. **Tretia vlna:** zvyšné typy bicyklov a trackstand.
 4. **Až nakoniec:** bliknutie, rozdvojenie, výbuch.
+
+## Farebný režim — nezablokovať sa
+
+Rotácia šiestich farieb **nemusí zostať navždy**. Zvažuje sa aj statické pozadie (čierne alebo
+biele) s tmavosivými bicyklami, ako to má Vercel Ship.
+
+Preto je **systém bicyklov úplne nezávislý od farebnej animácie**. V `sandbox.html` sa dá režim
+prepnúť v paneli:
+
+| Režim | Ako to vyzerá |
+|---|---|
+| **rotácia farieb** | Bicykle preblikávajú čierna/biela spolu s logom |
+| **statická čierna** | Čierne pozadie, biele logo, sivé bicykle |
+| **statická biela** | Biele pozadie, čierne logo, sivé bicykle |
+
+Sivý tón sa ladí posuvníkom (`filter: brightness()` nad bielymi spritmi).
+
+**Dôsledok pre grafika: nič.** Sprity sa kreslia bielym na priehľadnom v každom prípade — z bielej
+sa dá kódom spraviť čierna aj ľubovoľná sivá. Kresliť ich rovno sivé by nás naopak zablokovalo.
+
+**Dôsledok pre kód: žiadny.** Zmena režimu je prepnutie CSS triedy na `<body>`, v logike bicyklov
+sa nemení ani riadok.
 
 ## Kde to postavíme
 
@@ -229,6 +275,8 @@ Postavené a funkčné v `sandbox.html`:
 - ✅ Chytenie a ťahanie myšou, hodenie zotrvačnosťou
 - ✅ Klik = ťuknutie (bicykel blikne a zastane)
 - ✅ Rozdvojenie a výbuch s časticami + automatická náhrada
+- ✅ Všetky bicykle rovnako veľké
+- ✅ Prepínanie režimu pozadia: rotácia farieb / statická čierna / statická biela
 - ✅ Vlastný kurzor (`cursor:none` + kreslená rukavica), prepínateľný
 - ✅ Prefarbovanie na čiernu/bielu spolu s pozadím cez `filter: brightness(0)`
 - ✅ `devicePixelRatio`, `imageSmoothingEnabled=false`
@@ -248,7 +296,7 @@ Zvyšok kódu sa nemení — konštanty `BUNKA`, `SNIMOK`, `RIADOK` a `SEKTOR` o
 ### Čo ešte nie je
 
 - Bicykle na seba nereagujú, prechádzajú cez seba
-- Všetky tri typy vyzerajú rovnako, líšia sa len veľkosťou (dočasná grafika)
+- Všetky tri typy vyzerajú rovnako (dočasná grafika ich nerozlišuje)
 - Nie je doriešené správanie na mobile
 - `prefers-reduced-motion` sa zatiaľ nerešpektuje (v sandboxe zámerne, na ostrej stránke bude musieť)
 
