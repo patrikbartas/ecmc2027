@@ -18,8 +18,7 @@
     animation:bg var(--cycle) ease-in-out infinite;
   }
 
-  #plocha{position:fixed;inset:0;z-index:0;display:block;
-          animation:sprite var(--cycle) step-end infinite}
+  #plocha{position:fixed;inset:0;z-index:0;display:block}
   #plocha.mozem-chytit{cursor:grab}
   #plocha.chytam{cursor:grabbing}
 
@@ -41,15 +40,11 @@
     0%{color:var(--white)} 29.16%{color:var(--black)} 45.83%{color:var(--white)}
     62.5%{color:var(--black)} 95.83%{color:var(--white)}
   }
-  /* Sprity sú biele. brightness(0) z nich spraví čierne a alfu nechá. */
-  @keyframes sprite{
-    0%{filter:none} 29.16%{filter:brightness(0)} 45.83%{filter:none}
-    62.5%{filter:brightness(0)} 95.83%{filter:none}
-  }
+  /* Sprity sa prefarbujú v JS (kresli()), nie CSS filtrom – dvojfarebný bicykel
+     sa jedným brightness() prefarbiť nedá. Zlomy nižšie musia sedieť s @keyframes fg. */
 
   /* Statické režimy – systém bicyklov je od farebnej animácie nezávislý. */
-  body.stat, body.stat .stred, body.stat #plocha{animation:none}
-  body.stat #plocha{filter:brightness(var(--ton,.4))}
+  body.stat, body.stat .stred{animation:none}
   body.stat-cierna{background:var(--black)}  body.stat-cierna .stred{color:var(--white)}
   body.stat-biela {background:var(--white)}  body.stat-biela  .stred{color:var(--black)}
 
@@ -73,6 +68,9 @@
   #panel input[type=range]{width:132px;accent-color:#fff;height:14px}
   #panel select{width:132px;background:#000;color:#fff;border:1px solid #ffffff26;
                 border-radius:4px;font:inherit;font-size:11px;padding:2px 4px}
+  #panel input[type=color]{width:132px;height:18px;padding:0;background:none;
+                border:1px solid #ffffff26;border-radius:4px;cursor:pointer}
+  #panel .skupina.tlmena{opacity:.3}
   #panel .stopa{font-size:10px;opacity:.35;line-height:1.6;border-top:1px solid #ffffff14;
                 padding-top:10px}
   #panel .stopa kbd{border:1px solid #ffffff33;border-radius:3px;padding:0 4px;font:inherit}
@@ -86,15 +84,24 @@
   <h2>SANDBOX</h2>
 
   <div class="skupina">
-    <div class="nadpis" style="border:0;padding:0">POHYB</div>
-    <div class="r"><span>počet</span><input id="cPocet" type="range" min="1" max="60" value="15"><b id="vPocet">15</b></div>
-    <div class="r"><span>rýchlosť</span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></div>
-    <div class="r"><span>veľkosť</span><input id="cMierka" type="range" min="10" max="20" value="14"><b id="vMierka">1.4</b></div>
-    <div class="r"><span>pauzy</span><input id="cPauzy" type="range" min="0" max="100" value="63"><b id="vPauzy">63</b></div>
+    <div class="nadpis" style="border:0;padding:0">GRAFIKA</div>
+    <div class="r"><span>sada</span><select id="cSada">
+      <option value="nova">iba nová (96 px)</option>
+      <option value="stara">iba stará (48 px)</option>
+      <option value="obe">obe naraz</option>
+    </select><b></b></div>
   </div>
 
   <div class="skupina">
-    <div class="nadpis">POMER BICYKLOV</div>
+    <div class="nadpis">POHYB</div>
+    <div class="r"><span>počet</span><input id="cPocet" type="range" min="1" max="60" value="12"><b id="vPocet">12</b></div>
+    <div class="r"><span>rýchlosť</span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></div>
+    <div class="r"><span>veľkosť</span><input id="cMierka" type="range" min="5" max="20" value="10"><b id="vMierka">1.0</b></div>
+    <div class="r"><span>pauzy</span><input id="cPauzy" type="range" min="0" max="100" value="63"><b id="vPauzy">63</b></div>
+  </div>
+
+  <div class="skupina" id="gMix">
+    <div class="nadpis">POMER STARÝCH BICYKLOV</div>
     <div class="r"><span>mestský</span><input id="cMix0" type="range" min="0" max="100" value="33"><b id="vMix0">33%</b></div>
     <div class="r"><span>velociped</span><input id="cMix1" type="range" min="0" max="100" value="33"><b id="vMix1">33%</b></div>
     <div class="r"><span>cargo</span><input id="cMix2" type="range" min="0" max="100" value="34"><b id="vMix2">34%</b></div>
@@ -107,7 +114,8 @@
       <option value="cierna">statická čierna</option>
       <option value="biela">statická biela</option>
     </select><b></b></div>
-    <div class="r" id="rTon"><span>tón bicyklov</span><input id="cTon" type="range" min="5" max="100" value="40"><b id="vTon">40</b></div>
+    <div class="r"><span>telo</span><input id="cTelo" type="color" value="#6b6b6b"><b></b></div>
+    <div class="r"><span>vidlica</span><input id="cVidlica" type="color" value="#ffffff"><b></b></div>
   </div>
 
   <div class="stopa"><kbd>B</kbd> bicykle &nbsp; <kbd>H</kbd> panel &nbsp;·&nbsp; <b id="fps">–</b> fps</div>
@@ -118,31 +126,118 @@
 'use strict';
 
 // ---------------------------------------------------------------------------
-// Sprite sheety: bunky 48×48, 4 snímky v riadku, 6 riadkov.
-// Nakreslených 5 smerov, zvyšné 3 vznikajú preklopením. Biele na priehľadnom.
+// Sady grafiky
+//
+// Nakreslených je 5 smerov, zvyšné 3 vznikajú preklopením. Sady sa líšia veľkosťou
+// bunky, počtom snímok aj poradím riadkov, takže si to každá nesie sama.
+//
+// stará – bunka 48, 4 snímky, 6 riadkov (5 smerov + trackstand), jednofarebná
+// nová  – bunka 96, 3 snímky, 5 riadkov, DVOJFAROVÁ. Trackstand zatiaľ nie je
+//         nakreslený, berie sa zaň stojaci bok.
+//
+// Dvojfarebnosť: súbor nesie dve vrstvy pod sebou – horná polovica je telo,
+// dolná vidlica. Obe sú biele masky na priehľadnom, takže sa dajú vyfarbiť
+// ľubovoľnou dvojicou farieb cez composite operácie. Zámerne bez getImageData –
+// to by na file:// spadlo na tainted canvas.
 // ---------------------------------------------------------------------------
-const BUNKA = 48, SNIMOK = 4;
-const RIADOK = { E:0, S:1, N:2, SE:3, NE:4, TRACKSTAND:5 };
+const SADY = {
+  stara: {
+    bunka:48, snimok:4, vrstvy:1, maTrackstand:true,
+    riadok:{ E:0, S:1, N:2, SE:3, NE:4, TRACKSTAND:5 },
+    typy:{
+      mestsky:   'assets/sprites/bike-city.png',
+      velociped: 'assets/sprites/bike-velociped.png',
+      cargo:     'assets/sprites/bike-cargo.png',
+    },
+  },
+  nova: {
+    bunka:96, snimok:3, vrstvy:2, maTrackstand:false,
+    riadok:{ N:0, NE:1, E:2, SE:3, S:4 },
+    typy:{ 'mestsky-96': 'assets/sprites/bike-city-96-v1.png' },
+  },
+};
+for(const s of Object.values(SADY)) s.riadkov = Math.max(...Object.values(s.riadok)) + 1;
+
 // poradie zodpovedá atan2: 0=E 1=SE 2=S 3=SW 4=W 5=NW 6=N 7=NE
 const SEKTOR = [
-  {r:RIADOK.E, flip:false}, {r:RIADOK.SE, flip:false},
-  {r:RIADOK.S, flip:false}, {r:RIADOK.SE, flip:true },
-  {r:RIADOK.E, flip:true }, {r:RIADOK.NE, flip:true },
-  {r:RIADOK.N, flip:false}, {r:RIADOK.NE, flip:false},
+  {smer:'E', flip:false}, {smer:'SE', flip:false},
+  {smer:'S', flip:false}, {smer:'SE', flip:true },
+  {smer:'E', flip:true }, {smer:'NE', flip:true },
+  {smer:'N', flip:false}, {smer:'NE', flip:false},
 ];
 
-const TYPY = ['mestsky','velociped','cargo'];
-const SUBOR = {
-  mestsky:   'assets/sprites/bike-city.png',
-  velociped: 'assets/sprites/bike-velociped.png',
-  cargo:     'assets/sprites/bike-cargo.png',
-};
-const sheety = {};
-for(const t of TYPY){
-  const i = new Image();
-  i.onload  = () => { sheety[t] = i; };
-  i.onerror = () => console.warn('nenačítalo sa', SUBOR[t]);
-  i.src = SUBOR[t];
+// typ bicykla -> { sada, obrázok, prefarbené plátno }
+const KUSY = {};
+const STARE_TYPY = Object.keys(SADY.stara.typy);
+for(const [idSady, sada] of Object.entries(SADY)){
+  for(const [typ, subor] of Object.entries(sada.typy)){
+    const z = KUSY[typ] = { idSady, sada, img:null, kluc:null, platno:null };
+    const i = new Image();
+    i.onload  = () => { z.img = i; };
+    i.onerror = () => console.warn('nenačítalo sa', subor);
+    i.src = subor;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Prefarbenie sheetu. Beží iba keď sa farba naozaj zmení – čiže pri posunutí
+// vzorkovníka a dvakrát za cyklus pozadia, nie každý snímok.
+// ---------------------------------------------------------------------------
+const pomPlatno = document.createElement('canvas');
+const pomCtx = pomPlatno.getContext('2d');
+
+function prefarbeny(z, telo, vidlica){
+  const kluc = telo + '|' + vidlica;
+  if(z.kluc === kluc) return z.platno;
+  const s = z.sada, w = s.snimok*s.bunka, h = s.riadkov*s.bunka;
+  const c = z.platno || (z.platno = document.createElement('canvas'));
+  c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  g.drawImage(z.img, 0, 0, w, h, 0, 0, w, h);      // vrstva tela
+  g.globalCompositeOperation = 'source-in';
+  g.fillStyle = telo; g.fillRect(0,0,w,h);
+  g.globalCompositeOperation = 'source-over';
+  if(s.vrstvy === 2){
+    pomPlatno.width = w; pomPlatno.height = h;
+    pomCtx.imageSmoothingEnabled = false;
+    pomCtx.drawImage(z.img, 0, h, w, h, 0, 0, w, h); // vrstva vidlice
+    pomCtx.globalCompositeOperation = 'source-in';
+    pomCtx.fillStyle = vidlica; pomCtx.fillRect(0,0,w,h);
+    pomCtx.globalCompositeOperation = 'source-over';
+    g.drawImage(pomPlatno, 0, 0);
+  }
+  z.kluc = kluc;
+  return c;
+}
+
+// Farby bicyklov. Vzorkovníky platia pre tmavé pozadie; na svetlom sa obrátia,
+// inak by sivá na bielej zmizla.
+const FARBY = { telo:'#6b6b6b', vidlica:'#ffffff' };
+const obrat = hex => '#' + [1,3,5].map(i =>
+  (255 - parseInt(hex.substr(i,2),16)).toString(16).padStart(2,'0')).join('');
+
+// Zlomy sedia s @keyframes fg – v týchto úsekoch cyklu je pozadie svetlé.
+const SVETLE_USEKY = [[29.16,45.83],[62.5,95.83]];
+
+// Čas sa neberie z performance.now(), ale priamo z CSS animácie pozadia. Inak by
+// sa to rozišlo pri každom zaváhaní (iná štartovacia značka, prerušené vykresľovanie).
+let animPozadia = null;
+function podielCyklu(){
+  if(!animPozadia || animPozadia.playState !== 'running')
+    animPozadia = document.body.getAnimations?.().find(a => a.animationName === 'bg') || null;
+  if(!animPozadia) return 0;
+  const trvanie = animPozadia.effect.getTiming().duration;
+  return (animPozadia.currentTime % trvanie) / trvanie * 100;
+}
+
+function farbyTeraz(){
+  let svetle;
+  if(rezimPozadia === 'biela') svetle = true;
+  else if(rezimPozadia === 'cierna') svetle = false;
+  else { const t = podielCyklu(); svetle = SVETLE_USEKY.some(([a,b]) => t >= a && t < b); }
+  return svetle ? [obrat(FARBY.telo), obrat(FARBY.vidlica)]
+                : [FARBY.telo, FARBY.vidlica];
 }
 
 // ---------------------------------------------------------------------------
@@ -159,7 +254,7 @@ function prisposob(){
 }
 addEventListener('resize', prisposob); prisposob();
 
-const N = {pocet:15, rychlost:1, mierka:1.4, pauzy:.63, mix:[33,33,34]};
+const N = {pocet:12, rychlost:1, mierka:1, pauzy:.63, mix:[33,33,34]};
 let zapnute = false;               // bicykle sú implicitne vypnuté, zapína ich B
 
 // Na telefónoch a tabletoch sa bicykle nepúšťajú vôbec – nie je klávesnica, ťahanie
@@ -170,12 +265,21 @@ const MOBIL = (matchMedia('(pointer:coarse)').matches || innerWidth < 700)
 
 const nah  = (a,b) => a + Math.random()*(b-a);
 
-function nahodnyTyp(){
+let aktivnaSada = 'nova';       // nova | stara | obe – prepína sa v paneli
+let rezimPozadia = 'rotacia';
+
+function staryTyp(){
   const suma = N.mix.reduce((a,b)=>a+b,0);
-  if(suma <= 0) return TYPY[0];
+  if(suma <= 0) return STARE_TYPY[0];
   let r = Math.random()*suma;
-  for(let i=0;i<TYPY.length;i++){ r -= N.mix[i]; if(r<=0) return TYPY[i]; }
-  return TYPY[0];
+  for(let i=0;i<STARE_TYPY.length;i++){ r -= N.mix[i]; if(r<=0) return STARE_TYPY[i]; }
+  return STARE_TYPY[0];
+}
+
+function nahodnyTyp(){
+  if(aktivnaSada === 'stara') return staryTyp();
+  if(aktivnaSada === 'nova')  return 'mestsky-96';
+  return Math.random() < .5 ? 'mestsky-96' : staryTyp();
 }
 
 // ---------------------------------------------------------------------------
@@ -240,7 +344,7 @@ function rozdvoj(b){
   bicykle.splice(bicykle.indexOf(b),1);
 }
 
-const polomer = () => BUNKA*.42*N.mierka;
+const polomer = b => KUSY[b.typ].sada.bunka*.42*N.mierka;
 
 function update(dt){
   while(bicykle.length + cakajuNaObnovu < N.pocet) bicykle.push(novy());
@@ -260,13 +364,13 @@ function update(dt){
     if(b.stav === 'ide'){
       const v = 34 * N.rychlost * b.vlastnaRychlost;
       b.x += b.dx*v*dt; b.y += b.dy*v*dt;
-      const m = polomer();
+      const m = polomer(b);
       if(b.x<-m||b.x>W+m||b.y<-m||b.y>H+m) zmenStav(b,'ide');
     }
     if(b.mrka > 0) b.mrka -= dt;
     const tempo = b.stav==='ide' ? .11/Math.max(.35, N.rychlost*b.vlastnaRychlost) : .22;
     b.snimkaCas += dt;
-    if(b.snimkaCas >= tempo){ b.snimkaCas = 0; b.snimka = (b.snimka+1)%SNIMOK; }
+    if(b.snimkaCas >= tempo){ b.snimkaCas = 0; b.snimka = (b.snimka+1)%KUSY[b.typ].sada.snimok; }
   }
 
   for(let i=castice.length-1;i>=0;i--){
@@ -280,27 +384,33 @@ function kresli(){
   ctx.clearRect(0,0,W,H);
   if(!zapnute) return;
 
+  const [telo, vidlica] = farbyTeraz();
+
   // dojem plochy: kto je nižšie, kreslí sa navrch
   for(const b of bicykle.slice().sort((a,b)=>a.y-b.y)){
-    const sheet = sheety[b.typ]; if(!sheet) continue;
-    const d = BUNKA*N.mierka;
-    let riadok, flip;
+    const z = KUSY[b.typ]; if(!z || !z.img) continue;
+    const s = z.sada, B = s.bunka, d = B*N.mierka;
+    const sheet = prefarbeny(z, telo, vidlica);
+    let riadok, flip, snimka = b.drzany ? 0 : b.snimka;
     if(b.stav === 'stoji' && !b.drzany){
-      riadok = RIADOK.TRACKSTAND; flip = b.dx < 0;
+      flip = b.dx < 0;
+      // sada bez nakresleného trackstandu stojí na bočnom pohľade, zmrazenom na 1. snímke
+      if(s.maTrackstand) riadok = s.riadok.TRACKSTAND;
+      else { riadok = s.riadok.E; snimka = 0; }
     } else {
-      const s = ((Math.round(Math.atan2(b.dy,b.dx)/(Math.PI/4))%8)+8)%8;
-      riadok = SEKTOR[s].r; flip = SEKTOR[s].flip;
+      const k = SEKTOR[((Math.round(Math.atan2(b.dy,b.dx)/(Math.PI/4))%8)+8)%8];
+      riadok = s.riadok[k.smer]; flip = k.flip;
     }
     ctx.save();
     ctx.translate(Math.round(b.x), Math.round(b.y));
     if(b.drzany) ctx.translate(0,-6);
     if(flip) ctx.scale(-1,1);
     if(b.mrka > 0) ctx.globalAlpha = (Math.floor(b.mrka*20)%2) ? .35 : 1;
-    ctx.drawImage(sheet, (b.drzany?0:b.snimka)*BUNKA, riadok*BUNKA, BUNKA, BUNKA, -d/2, -d/2, d, d);
+    ctx.drawImage(sheet, (snimka % s.snimok)*B, riadok*B, B, B, -d/2, -d/2, d, d);
     ctx.restore();
   }
 
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = vidlica;
   for(const c of castice){
     ctx.globalAlpha = Math.max(0, c.zivot/c.max);
     ctx.fillRect(Math.round(c.x-c.r), Math.round(c.y-c.r), c.r*2, c.r*2);
@@ -313,9 +423,8 @@ function kresli(){
 // ---------------------------------------------------------------------------
 function podKurzorom(px,py){
   if(!zapnute) return null;
-  const m = polomer();
   for(let i=bicykle.length-1;i>=0;i--){
-    const b = bicykle[i];
+    const b = bicykle[i], m = polomer(b);
     if(Math.abs(px-b.x)<m && Math.abs(py-b.y)<m) return b;
   }
   return null;
@@ -393,19 +502,30 @@ function upravMix(i){
 mixEl.forEach((el,i) => el.addEventListener('input', () => upravMix(i)));
 zobrazMix();
 
-const selPozadie = $('cPozadie'), selTon = $('cTon');
+const selPozadie = $('cPozadie');
 function nastavPozadie(){
-  const v = selPozadie.value;
-  document.body.classList.toggle('stat', v !== 'rotacia');
-  document.body.classList.toggle('stat-cierna', v === 'cierna');
-  document.body.classList.toggle('stat-biela',  v === 'biela');
-  document.body.style.setProperty('--ton', (+selTon.value)/100);
-  $('vTon').textContent = selTon.value;
-  $('rTon').style.opacity = (v === 'rotacia') ? .3 : 1;
+  rezimPozadia = selPozadie.value;
+  document.body.classList.toggle('stat', rezimPozadia !== 'rotacia');
+  document.body.classList.toggle('stat-cierna', rezimPozadia === 'cierna');
+  document.body.classList.toggle('stat-biela',  rezimPozadia === 'biela');
 }
 selPozadie.addEventListener('change', nastavPozadie);
-selTon.addEventListener('input', nastavPozadie);
 nastavPozadie();
+
+for(const [id, key] of [['cTelo','telo'], ['cVidlica','vidlica']]){
+  const el = $(id);
+  el.addEventListener('input', () => { FARBY[key] = el.value; });
+  FARBY[key] = el.value;
+}
+
+const selSada = $('cSada');
+function nastavSadu(){
+  aktivnaSada = selSada.value;
+  $('gMix').classList.toggle('tlmena', aktivnaSada === 'nova');
+  for(const bic of bicykle) bic.typ = nahodnyTyp();   // hneď vidieť efekt
+}
+selSada.addEventListener('change', nastavSadu);
+nastavSadu();
 
 // ---------------------------------------------------------------------------
 // Klávesy: B zapína bicykle, H panel. Nikde to nie je napísané – nech sa to nájde.

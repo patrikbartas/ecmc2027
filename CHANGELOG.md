@@ -15,6 +15,18 @@ Kategórie: **Pridané** · **Zmenené** · **Odstránené** · **Opravené**
 
 _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 
+### Pridané
+
+- **Nová sada bicyklov v `sandbox.html`** — mestský bicykel v bunke 96 px namiesto 48,
+  po prvý raz **dvojfarebný**: sivé telo a bledá predná vidlica, aby bolo vidieť, kam
+  bicykel mieri. Prepína sa v paneli (`sada`), stará sada sa dá vypnúť.
+- **Vzorkovníky farieb bicyklov** v paneli sandboxu (telo, vidlica). Nahradili posuvník tónu.
+
+### Zmenené
+
+- Sprity sa v sandboxe prefarbujú v JS, nie CSS filtrom — `brightness(0)` vie prefarbiť
+  jednofarebný obrázok, dvojfarebný by zhasol celý aj s vidlicou
+
 ---
 
 ## 2026-08-18
