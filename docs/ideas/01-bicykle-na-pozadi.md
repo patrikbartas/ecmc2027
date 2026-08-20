@@ -406,6 +406,11 @@ kým nie sú odsúhlasené.
 Rotácia šiestich farieb **nemusí zostať navždy**. Zvažuje sa aj statické pozadie (čierne alebo
 biele) s tmavosivými bicyklami, ako to má Vercel Ship.
 
+✅ **Rozhodnuté 20. 8. 2026: v produkčnej verzii webu rotácia nebude.** Ostane len svetlý
+a tmavý režim, šesťfarebná paleta sa z pozadia presunie na bicykle (viď
+[02-avatar-jazdca.md](02-avatar-jazdca.md)). Rotácia je vec **súčasnej landing page**, takže
+nižšie popísaný sandbox aj prepínač režimov platia ďalej — len vieme, kam to smeruje.
+
 Preto je **systém bicyklov úplne nezávislý od farebnej animácie**. V `sandbox.html` sa dá režim
 prepnúť v paneli:
 
@@ -422,9 +427,13 @@ sa obe obrátia.
 nepriehľadné hodnoty v súbore. Konkrétne odtiene sú len značky — kód ich prefarbí. Kresliť rovno
 finálnu sivú by nás naopak zablokovalo.
 
-⚠️ **Otvorené:** dnes je to jedna dvojica farieb a jej inverzia. Na čiernej sedí `#6b6b6b` telo
-s bielou vidlicou, ale na žltej z toho vyjde `#949494`, čo je slabý kontrast. Ak sa rotácia
-šiestich farieb udrží, budú na to nakoniec treba dve nezávislé dvojice.
+~~⚠️ **Otvorené:** dnes je to jedna dvojica farieb a jej inverzia. Na čiernej sedí `#6b6b6b`
+telo s bielou vidlicou, ale na žltej z toho vyjde `#949494`, čo je slabý kontrast. Ak sa rotácia
+šiestich farieb udrží, budú na to nakoniec treba dve nezávislé dvojice.~~
+
+✅ **Odpadá 20. 8. 2026** — rotácia v produkcii nebude, takže žltá, na ktorej to padalo,
+neexistuje. Stačí jedna dvojica farieb a jej inverzia pre svetlý/tmavý režim. Na súčasnej landing
+page sa tým nič nemení.
 
 **Dôsledok pre kód:** prefarbovanie je v JS (`prefarbeny()` v `sandbox.html`), nie CSS filter —
 dvojfarebný sprite sa jedným `brightness()` prefarbiť nedá.

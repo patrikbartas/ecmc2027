@@ -51,11 +51,28 @@ počíta s trojicou *mestský / velociped / cargo*. Avatar hovorí o *fixke / ca
 zatiaľ neexistuje. Nie je to konflikt, ktorý treba riešiť teraz — len nech to nezapadne, kým sa
 kreslí ďalej.
 
+### Pozadie v produkčnej verzii: light / dark, žiadna rotácia
+
+**Povedané 20. 8. 2026.** Rotácia šiestich farieb je vec **súčasnej landing page**, nie
+produkčného webu. Ten bude mať **len svetlý a tmavý režim** a šesťfarebná paleta na pozadí
+nebude.
+
+Nie je to detail, mení to niekoľko vecí naraz:
+
+- Prefarbovanie bicyklov rieši **dve témy namiesto šiestich rotujúcich pozadí** — čiže menej
+  kombinácií v cache a jednoduchšia logika (viď čísla nižšie).
+- Padá otvorená otázka z [01](01-bicykle-na-pozadi.md), či bude treba **dve nezávislé dvojice
+  farieb**, aby bicykle držali kontrast aj na žltej. Žltá tam nebude.
+- Hustá mriežka Depa dostane pokojné pozadie, na aké je stavaná.
+- Šesť značkových farieb sa presúva **z pozadia na bicykle**. Tam ostáva farebnosť podujatia
+  žiť — a je to zmysluplnejšie, lebo je viazaná na konkrétneho človeka.
+
 ### Prečo šesť farieb a nie picker
 
 Dva dôvody, oba praktické:
 
-1. Na rotujúcom šesťfarebnom pozadí polovica voľne zvolených farieb zmizne.
+1. Voľná farba sa musí uniesť na svetlom aj tmavom pozadí. Šesť značkových sa dá odladiť raz;
+   ľubovoľná hodnota z pickera nie.
 2. Prefarbený sheet sa cachuje. Pri voľnej farbe je cache **per-jazdec**, nie per-kombináciu —
    a to je rádový rozdiel (viď čísla nižšie).
 
@@ -97,6 +114,96 @@ Na hustotu si treba dať pozor, to číslo prekvapí: **300 bicyklov po 60 px za
 bežnej obrazovky.** To už nie je dav, to je koberec. Pri 40 px je to ~20 %, čo sa ešte číta ako
 skupina ľudí.
 
+### Mriežka — východiskový režim Depa
+
+**Dohodnuté 20. 8. 2026.** Depo má dva režimy a **mriežka je východisková**; voľný rozsyp je
+druhý. Depo je adresár — ideš tam niekoho nájsť, a na to je mriežka lepšia. Voľný pohyb patrí
+na titulku, kde je dvadsať bicyklov kulisou za obsahom.
+
+![Referencia — denníková appka, kde je každý deň jedna kresba](02-referencia-mriezka.jpg)
+
+*Referencia: screenshot cudzej denníkovej aplikácie (názov neznámy). Držaný tu ako vizuálna
+poznámka, nie ako predloha na kopírovanie.*
+
+Mriežka rieši dve veci, ktoré rozsyp nevie:
+
+- **Bez prekrytí.** 300 bicyklov v rozsype zaberie ~47 % obrazovky a je z toho koberec.
+  Mriežka ich uloží tesne vedľa seba a nič sa neprekrýva.
+- **Mriežka je číslo.** Rozsyp skrýva, koľko ich je. Blok tristo bicyklov ten počet ukáže bez
+  toho, aby ho niekto musel napísať.
+
+A nájsť sa v nej dá — v rozsype je „ten farebný" k ničomu, ak je za logom; v mriežke má každý
+pevné miesto.
+
+#### ⚠️ Riziko: opakovanie
+
+Referencia funguje preto, že **každý deň je iná kresba** — je tam dvesto unikátnych vecí a to je
+celý pôvab.
+
+My máme 2 typy × 6 farieb = **12 vzhľadov**. Pri 300 jazdcoch je to 25 kópií od každého, čo sa
+neprečíta ako tristo ľudí, ale ako tapeta. **Toto je na mriežke to jediné, čo ju môže pokaziť,
+a pri kreslení sa na to ľahko zabudne.**
+
+Tri cesty von, dajú sa kombinovať:
+
+1. **Smer zaparkovania ako ďalšia os.** Bicykel v boxe nemusí stáť vždy rovnako — 5 smerov × 12
+   = 60 vzhľadov, a **nula nových spritov**, sady to už obsahujú. Najlacnejší zdroj rozmanitosti,
+   aký existuje.
+2. **Priznať opakovanie a zoradiť podľa neho.** Pri zoradení podľa farby a typu sú z opakovania
+   zámerné bloky — vyzerá to ako vzorkovník, nie ako chyba.
+3. Doplnky, ak na ne raz dôjde — každý ďalší prvok počet vzhľadov násobí.
+
+Vedľajší dôsledok: smer zaparkovania je aj **rozhodnutie o balení**. Bicykel zboku je široký
+a nízky, takže v štvorcovej bunke 96 px nechá polovicu výšky prázdnu; pohľady spredu/zozadu sú
+úzke a vysoké. Buď sa tomu prispôsobí tvar bunky, alebo sa smery zvolia tak, aby mriežka sadla.
+
+#### Statické neznamená mŕtve — trackstand
+
+Úplne nehybná mriežka sa prečíta ako graf, nie ako „ľudia čakajú na preteky".
+
+Riešenie je už v [01](01-bicykle-na-pozadi.md): **trackstand**. Každý bicykel stojí vo svojom boxe
+a jemne sa kýve, každý s vlastným fázovým posunom. Tristo bicyklov držiacich trackstand
+v mriežke je lepší obraz než čokoľvek, čo by robili v pohybe — a je to reálna disciplína ECMC,
+takže to nie je ozdoba. Nula nových spritov nad rámec toho, čo je aj tak v zadaní.
+
+#### Prechod medzi režimami — „zaparkovanie"
+
+Nie „prepnúť zobrazenie", ale **zaparkovať**: bicykle sa z rozsypu rozídu na svoje miesta
+v mriežke. Zmena zoradenia je to isté — prejdú do nových boxov.
+
+Engine to už skoro vie, lebo vie ísť smerom k bodu; cieľ len prestane byť náhodný a stane sa ním
+pridelený box. Je to zopár riadkov nad existujúcim kódom a je to presne tá vec, ktorú si ľudia
+nahrajú a hodia na Instagram.
+
+Tým sa zároveň vyrieši filter lepšie než zhlukmi — **zhluky sú neurčité, boxy sú presné.**
+
+#### Východiskové zoradenie: poradie prihlásenia
+
+Referencia je zoradená chronologicky, deň po dni. To sa dá vziať doslova: **poradie registrácie
+je jediné zoradenie, ktoré máme vždy.** Krajiny sa dajú spočítať až keď je koho, štartové čísla
+vzniknú mesiac pred pretekmi — ale poradie prihlásenia existuje od prvého jazdca a nikdy sa
+nezmení.
+
+Dá to jazdcovi ďalší osobný údaj, ktorý mu nikto nezoberie: *„prihlásil si sa ako 47."* Sedí to
+k rozdeleniu slug / štartové číslo — je to fakt, nie pridelená hodnota.
+
+#### Prázdne miesta = voľné kapacity
+
+V referencii sú pod vyplnenou časťou bodky pre dni, ktoré ešte neprišli. U nás by to boli
+**miesta, ktoré ešte nie sú obsadené** — a to nie je dekorácia, to je dôvod sa prihlásiť.
+
+⚠️ **Podmienené stropom, ktorý zatiaľ nepoznáme.** Ak sa počet neobmedzuje, mriežka len rastie
+a bodky nemajú čo znázorňovať. Patrik to preberie s organizačným tímom. A pozor na druhú stranu
+tej istej mince: mriežka zverejní nielen počet prihlásených, ale aj **koľko miest sa nepredalo**
+(viď „Počet je verejný údaj" nižšie).
+
+#### Dva vedľajšie zisky
+
+- **Mobil.** Referencia je screenshot z telefónu, a nie náhodou — mriežka sa scrolluje, rozsyp
+  nie. `01` má správanie na mobile ako otvorenú dieru; toto je naň odpoveď.
+- **`prefers-reduced-motion`.** Statická mriežka nie je ochudobnená verzia, ale plnohodnotný
+  režim. Povinnosť sa tým mení na funkciu.
+
 ### Filtre, ktoré preskupujú
 
 Toto je najlepšia príležitosť celej stránky a je skoro zadarmo, lebo engine už vie hýbať vecami:
@@ -113,7 +220,7 @@ Po podujatí sa Depo stane archívom s výsledkami. Web tak neumrie deň po pret
 `/r/<slug>` zvýrazní jeho bicykel: **ostatní zošedivejú, jeho ostane farebný.**
 
 Technicky je to lacnejšie než bežné zobrazenie, nie drahšie — greyscale nie je filter, ale iná
-dvojica farieb v tom istom prefarbovaní. Namiesto ~36 prefarbených sheetov stačia 3 sivé
+dvojica farieb v tom istom prefarbovaní. Namiesto ~12 prefarbených sheetov stačia 2 sivé
 a 1 farebný.
 
 Tri detaily, ktoré ten moment rozhodnú:
@@ -181,8 +288,8 @@ Aby sa k nim netreba prehrýzať znova:
 |---|---|
 | Jeden prefarbený sheet novej sady (384 × 480 px) v pamäti | ~720 kB |
 | Voľná farba, 300 jazdcov → cache per-jazdec | **~216 MB** — zabije mobil |
-| 6 farieb × 3 typy × 2 inverzie → cache per-kombináciu | ~26 MB |
-| Greyscale + jeden zvýraznený | **~3 MB** |
+| 6 farieb × 2 typy v aktívnej téme → cache per-kombináciu | ~8,6 MB |
+| Greyscale + jeden zvýraznený | **~2,2 MB** |
 | Verejný JSON, 300 jazdcov | ~12 kB, po gzipe ~3 kB |
 | 300 bicyklov po 60 px na bežnej obrazovke | ~47 % plochy — priveľa |
 | 300 bicyklov po 40 px | ~21 % plochy — číta sa ako dav |
@@ -210,11 +317,14 @@ Aby sa k nim netreba prehrýzať znova:
   opačne nie.
 - ❌ **Štartové číslo na sprite** (20. 8. 2026) — neprečítateľné, a zdraží každú snímku. Do
   popisku.
-- ❌ **Voľná paleta / RGB picker** (20. 8. 2026) — pamäť a čitateľnosť na šiestich pozadiach.
+- ❌ **Voľná paleta / RGB picker** (20. 8. 2026) — pamäť, a čitateľnosť na svetlom aj tmavom
+  pozadí sa nedá odladiť pre ľubovoľnú hodnotu.
 - ❌ **Štartové číslo ako ID v URL** (20. 8. 2026) — prečíslovanie rozbije zdieľané odkazy.
 
 ## Otvorené
 
+- **Existuje strop počtu účastníkov?** Bez neho nedávajú prázdne miesta v mriežke zmysel.
+  Patrik to preberie s organizačným tímom.
 - Názov stránky — *Depo* je zatiaľ pracovný
 - Či fixka nahrádza mestský a velociped, alebo pribúda k nim (viď nesúlad vyššie)
 - Brašne a vozík — možnosť, nie rozhodnutie
