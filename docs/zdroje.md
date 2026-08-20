@@ -30,6 +30,13 @@ Všetko overené 18. 8. 2026.
 - [Mikkeller — ECMC 2016 Kodaň](https://www.mikkeller.com/news/20160720european-cycle-messenger-championships-july-21st-24th) — historický kontext
 - [YouTube — ECMC 2023 Budapešť](https://www.youtube.com/watch?v=dIbZ_zE4RZc) — video z podujatia
 
+## Technické referencie
+
+- [blobatar.dev](https://blobatar.dev/) — deterministický generátor avatarov z reťazca. Zdroják
+  [Alain00/blobatar](https://github.com/Alain00/blobatar), MIT. Zaujímavé kvôli odvodzovaniu
+  vlastností z hashu, nie kvôli kresleniu — rozbor v
+  [docs/ideas/02-avatar-jazdca.md](ideas/02-avatar-jazdca.md). Overené 20. 8. 2026.
+
 ## Instagram účty ročníkov
 
 - [@ecmc2027](https://www.instagram.com/ecmc2027/) — náš

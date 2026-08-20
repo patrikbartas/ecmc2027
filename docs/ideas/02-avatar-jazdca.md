@@ -88,6 +88,94 @@ akýkoľvek doplnok sa pridá neskôr bez zásahu do kódu. Nekreslí sa nič do
 Poznámka k vozíku, keby na neho niekedy prišlo: je *za* bicyklom, takže mení poradie
 vykreslenia — pri jazde nahor sa kreslí **cez** bicykel, pri jazde nadol **pod** neho.
 
+## Odvodený bicykel — inšpirácia blobatarom
+
+**Zapísané 20. 8. 2026.** Zdroj: [blobatar.dev](https://blobatar.dev/),
+[github.com/Alain00/blobatar](https://github.com/Alain00/blobatar), MIT. Prezreté vrátane
+zdrojákov v npm balíku, nielen READMEčka.
+
+Blobatar generuje avatar **z reťazca** — z prezývky, emailu, čohokoľvek. Rovnaký vstup dá vždy
+rovnaký obrázok, nikde sa nič neukladá. Nás na ňom nezaujíma to, čo kreslí, ale **ako priraďuje
+vlastnosti**, lebo to je presne odpoveď na náš default avatar (viď „Na čo nezabudnúť").
+
+### Ako to funguje — tabuľka, ktorá neexistuje
+
+Predstav si tabuľku, kde riadok je jazdec a stĺpec je vlastnosť:
+
+```
+              typ     farba   smer   brašne
+pa3k          0.41    0.88    0.12   0.67
+marek         0.93    0.05    0.71   0.30
+```
+
+Neukladá sa. Počíta sa zo slugu plus názvu stĺpca, a vyjde vždy rovnako. Číslo `0.41` sa potom
+preloží na vlastnosť: `pick("typ", ["fixka", "cargo"])` → `0.41 × 2 = 0.83` → fixka.
+
+Podstatné je, že číslo sa počíta **zo slugu a názvu stĺpca**, nie postupným čítaním zo
+spoločného prúdu. Preto sú stĺpce navzájom nezávislé a nový stĺpec nepohne existujúcimi.
+
+Zvyšné dve veci, ktoré tam riešia a inak by sa na ne zabudlo: podobné slugy musia dať úplne iné
+čísla (`pa3k` vs `pa3l` nesmú mať skoro rovnaký bicykel — preto premiešavanie bitov, jednoduchý
+hash tú vlastnosť nemá), a `Pa3k` vs `pa3k ` musí byť ten istý človek (normalizácia vstupu).
+
+### Čo tým získame
+
+**Default sa neprideľuje, odvodí sa zo slugu.** Nič sa neukladá — žiadny stĺpec v databáze,
+žiadna migrácia, žiadny backfill pre tých, čo sa prihlásili skôr. Pri verejnom repe a GDPR je
+neuložený údaj vždy lepší než uložený. A vyzerá to ako voľba, aj keď ju nikto neurobil.
+
+**Editor je override nad odvodeným základom, nie druhý režim.** Keď si jazdec zvolí typ a farbu,
+tie dve hodnoty sa dosadia a ostatné sa naďalej berú z odvodenia. Jeden renderer, jedna cesta
+v kóde.
+
+**Doplnky sa dajú pridať bez toho, aby sa niekomu zmenil bicykel.** V sekcii „Ako nechať doplnky
+otvorené" je vyriešená grafická polovica problému (kontrakt na vrstvu). Toto je tá druhá: ak sa
+brašne raz pridajú ako nový stĺpec, nikomu, kto si ich nezvolil, sa nič nezmení. Pri sekvenčnom
+čítaní z hashu by sa v marci premiešali všetci — vrátane ľudí, čo už majú screenshot `/r/<slug>`
+na Instagrame. Je to tá istá trieda chyby ako „štartové číslo ako ID v URL" v Zamietnutých:
+tichý rozpad vecí, ktoré sú už vonku a nedajú sa opraviť.
+
+**Stabilné maličkosti zadarmo.** Fázový posun trackstandu a smer zaparkovania v mriežke sú dnes
+`Math.random()`, čiže iné pri každom načítaní. Odvodené zo slugu sú stále rovnaké — bicykel sa
+kýve vždy tak isto a v mriežke stojí vždy rovnako otočený. Drobnosť, ale je to presne to
+„to som ja". A keby sa raz renderovalo aj na serveri (OG obrázok, SSR), odpadá nesúlad medzi
+serverom a klientom.
+
+**Ich argument pre šesť farieb je lepší než náš.** V „Prečo šesť farieb a nie picker" máme dva
+dôvody, oba technické (pamäť, kontrast). Blobatar necháva seed hýbať **iba odtieňom**, kým
+svetlosť a sýtosť sú autorské konštanty — šesť ručne odladených tónov. Komentár v ich zdrojáku:
+*nechať seed voľne behať po svetlosti a sýtosti je presne to, čo spôsobí, že generované palety
+vyzerajú generovane.* To je estetický dôvod pre to isté rozhodnutie a stojí za to ho mať zapísaný.
+
+### ⚠️ Pasca: zoznamy sa nesmú meniť
+
+Ak k `["fixka", "cargo"]` pribudne tretí typ, tak `0.41 × 3 = 1.25` → index 1 → **cargo**. Ten
+istý jazdec, nezmenený slug, a bicykel sa mu prevrátil — len preto, že sa zoznam predĺžil.
+
+Takže: nové vlastnosti sa **pridávajú ako nové stĺpce** (to je bezpečné), ale existujúce zoznamy
+a číselné rozsahy sa **zmrazia**. Priamo to súvisí s otvorenou otázkou, či fixka nahrádza mestský
+a velociped, alebo k nim pribúda — **to sa musí rozhodnúť skôr, než sa pridelí prvý odvodený
+bicykel**, lebo potom sa zoznam typov už nedá zmeniť bez premiešania všetkých.
+
+### Čo z toho nepoužijeme
+
+**Kreslenie.** Blobatar generuje tvar procedurálne z matematiky (jedna superelipsa
+`|x/a|ⁿ + |y/b|ⁿ = 1`, kde „tvar hlavy" je len číslo `n`). My máme kreslené sprity od grafika
+s pevným kontraktom. Žiadny vzorec nevyrobí bicykel, ktorý k tej sade sedí. Väčšina ich repa je
+pre nás nepoužiteľná — berieme si z neho ~60 riadkov, nie knižnicu.
+
+**A nerieši nám to opakovanie.** Blobatar vyzerá dobre, lebo má priestor v desiatkach tisíc
+kombinácií. My máme 12 vzhľadov. Ak si požičiame mechanizmus a necháme 12 vzhľadov, riziko
+tapety z „⚠️ Riziko: opakovanie" sa nezlepší ani o kúsok — to riešia ďalšie osi (smer
+zaparkovania), nie odvodzovanie.
+
+### Kedy to spraviť
+
+**Dá sa hocikedy, aj teraz.** Nepotrebuje to backend ani registráciu — je to čistá funkcia zo
+stringu. V sandboxe by sa pole konfigurácií generovalo zo zoznamu vymyslených slugov namiesto
+`Math.random()`, čo je presne to, o čom hovorí sekcia „Prečo to nie je hra": engine sa oplatí
+prerobiť na renderovanie z poľa konfigurácií dávno predtým, než to pole má odkiaľ prísť.
+
 ## Depo — stránka, kde sú všetci
 
 Pri 300 jazdcoch na titulke nastanú dva problémy naraz: je to vizuálny chaos a **nikto v tom
@@ -298,7 +386,8 @@ Aby sa k nim netreba prehrýzať znova:
 
 - **Default avatar sa musí prideliť automaticky** po zaplatení. Väčšina ľudí editor nikdy
   neotvorí, a keby mali prázdny avatar, Depo by boli tri stovky identických bicyklov. Takto je
-  každý na ploche hneď a úprava je bonus, nie podmienka.
+  každý na ploche hneď a úprava je bonus, nie podmienka. Ako na to bez ukladania čohokoľvek:
+  viď „Odvodený bicykel — inšpirácia blobatarom".
 - **Súhlas a GDPR.** Repo je verejné a dáta účastníkov v ňom nesmú byť (viď `CLAUDE.md`). Verejný
   JSON smie obsahovať len to, čo jazdec odklikol, že sa má ukázať. Voľba pri registrácii: meno /
   prezývka / anonymne. Tabuľku nevystavovať priamo do prehliadača.
@@ -326,6 +415,8 @@ Aby sa k nim netreba prehrýzať znova:
 - **Existuje strop počtu účastníkov?** Bez neho nedávajú prázdne miesta v mriežke zmysel.
   Patrik to preberie s organizačným tímom.
 - Názov stránky — *Depo* je zatiaľ pracovný
-- Či fixka nahrádza mestský a velociped, alebo pribúda k nim (viď nesúlad vyššie)
+- Či fixka nahrádza mestský a velociped, alebo pribúda k nim (viď nesúlad vyššie).
+  ⚠️ Ak sa pôjde cestou odvodeného bicykla, **toto sa musí rozhodnúť skôr, než sa pridelí prvý
+  odvodený bicykel** — potom sa zoznam typov nedá zmeniť bez premiešania všetkých.
 - Brašne a vozík — možnosť, nie rozhodnutie
 - Editor avatara pred registráciou (postav si bicykel, potom sa prihlás) vs. až po zaplatení
