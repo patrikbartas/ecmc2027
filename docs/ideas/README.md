@@ -5,7 +5,7 @@ Priečinok na produktové nápady, ktoré ešte nie sú rozhodnuté ani rozpraco
 | Nápad | Stav |
 |---|---|
 | [01-bicykle-na-pozadi.md](01-bicykle-na-pozadi.md) | ✅ Nasadené; v sandboxe beží na posúdenie nová dvojfarebná sada 96 px |
-| [02-avatar-jazdca.md](02-avatar-jazdca.md) | 💡 Nápad; bicykel ako avatar registrovaného jazdca a stránka Depo, zápis rozpravy z 20. 8. 2026 |
+| [02-avatar-jazdca.md](02-avatar-jazdca.md) | 💡 Nápad; bicykel ako avatar registrovaného jazdca a stránka Depo, zápisy rozpráv z 20. a 21. 8. 2026 |
 
 ## Ako to používať
 

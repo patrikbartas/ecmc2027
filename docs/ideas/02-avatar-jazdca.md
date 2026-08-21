@@ -1,7 +1,7 @@
 # Avatar jazdca — bicykel, ktorý ho zastupuje
 
 **Stav:** 💡 Nápad — nič sa nestavia, nič nie je rozhodnuté
-**Zapísané:** 20. 8. 2026
+**Zapísané:** 20. 8. 2026, doplnené 21. 8. 2026
 **Súvisí s:** [01-bicykle-na-pozadi.md](01-bicykle-na-pozadi.md) — stavia to na tom istom engine
 
 ⚠️ **Toto nie je plán a hlavne to nie je rozhodnutie o technológii.** Je to zápis rozpravy, aby
@@ -43,8 +43,13 @@ obmedzenie.**
 |---|---|---|
 | **Typ** — fixka / cargo | dohodnuté, zatiaľ len tieto dva | celá sada snímok na typ |
 | **Farba** — zo šiestich značkových | dohodnuté | **0 obrázkov** — prefarbuje sa v kóde |
-| Brašne | ⬜ možnosť, nie rozhodnutie | ~5 obrázkov (nešliapu, stačí 1 na smer) |
-| Vozík s vlajočkou | ⬜ možnosť, nie rozhodnutie | ~8–13 obrázkov + logika poradia vykreslenia |
+| **Druhá farba** — vidlica nezávisle od tela | ⬜ návrh z 21. 8. 2026 | **0 obrázkov** — sheet už dve vrstvy nesie |
+| Brašne — pod sedlo / do rámu / na riaditká | ⬜ možnosť, nie rozhodnutie | ~5 obrázkov na kus (nešliapu, stačí 1 na smer) |
+| Riaditká — drops / bullhorn / flat | ⬜ možnosť, nie rozhodnutie | 15 obrázkov (3 typy × 5 smerov) |
+| Náklad na cargu — stromček, palma, sud… | ⬜ možnosť, nie rozhodnutie | ~5 obrázkov na náklad |
+| ~~Vozík s vlajočkou~~ | ❌ zamietnuté 21. 8. 2026 | — |
+
+Cenník doplnkov aj pasce, ktoré k nim patria, sú v „Čo sa dá editovať" nižšie.
 
 ⚠️ **Nesúlad s [01](01-bicykle-na-pozadi.md), ktorý treba raz doriešiť:** zadanie pre grafika tam
 počíta s trojicou *mestský / velociped / cargo*. Avatar hovorí o *fixke / cargu*. Fixka v sade
@@ -85,8 +90,9 @@ Otvorené sa to nechá **vo formáte, nie v kreslení**. Ak sa s grafikom dohodn
 vrstvu — bunka 96 px, pevný kotviaci bod, dve nepriehľadné hodnoty, alfa výhradne 0/255 —
 akýkoľvek doplnok sa pridá neskôr bez zásahu do kódu. Nekreslí sa nič dopredu.
 
-Poznámka k vozíku, keby na neho niekedy prišlo: je *za* bicyklom, takže mení poradie
-vykreslenia — pri jazde nahor sa kreslí **cez** bicykel, pri jazde nadol **pod** neho.
+Poznámka k vozíku, ktorý je medzičasom zamietnutý — nech je dôvod zapísaný, keby sa k nemu raz
+niekto vracal: je *za* bicyklom, takže ako jediný doplnok mení poradie vykreslenia — pri jazde
+nahor sa kreslí **cez** bicykel, pri jazde nadol **pod** neho.
 
 ## Odvodený bicykel — inšpirácia blobatarom
 
@@ -175,6 +181,120 @@ zaparkovania), nie odvodzovanie.
 stringu. V sandboxe by sa pole konfigurácií generovalo zo zoznamu vymyslených slugov namiesto
 `Math.random()`, čo je presne to, o čom hovorí sekcia „Prečo to nie je hra": engine sa oplatí
 prerobiť na renderovanie z poľa konfigurácií dávno predtým, než to pole má odkiaľ prísť.
+
+## Čo sa dá editovať — cenník a príklady
+
+**Zapísané 21. 8. 2026.** Rozprava o tom, čo si jazdec na bicykli reálne prestaví.
+
+⚠️ **Konkrétne kusy nižšie sú príklad smeru, nie zoznam na nakreslenie.** Čo sa naozaj nakreslí,
+sa dohodne s grafikom. Podstatné je pravidlo, podľa ktorého sa dá o hocijakom ďalšom nápade
+rozhodnúť za minútu, a dve pasce, do ktorých sa inak spoľahlivo spadne.
+
+### Pravidlo: doplnok stojí 5 obrázkov, alebo 20
+
+Doplnok, ktorý sa voči rámu **nehýbe**, stačí nakresliť raz na smer → **5 obrázkov**. Doplnok,
+ktorý sa hýbe s kolesom alebo s kľukami, musí byť v každej snímke → **20**. Medzi tým nie je nič.
+
+To je celý filter. Podľa neho vyzerá zoznam takto:
+
+| Nula obrázkov | Päť obrázkov | Nekresliť |
+|---|---|---|
+| **druhá farba** (36 kombinácií) | brašňa pod sedlo | koleso (disk vs. špice) — musí prekryť točiace sa koleso |
+| smer zaparkovania (×5) | brašňa do rámu | **spokecard** — točí sa s kolesom, čiže 20 snímok |
+| fáza trackstandu | brašňa na riaditká | čokoľvek na jednom boku (viď pasca nižšie) |
+| blikačka — 2 px bod, ktorý bliká kód v kotviacom bode | **riaditká** — drops / bullhorn / flat | |
+| | U-zámok na ráme | |
+| | vlajočka na sedlovke | |
+| | **náklad do cargo debny** | |
+
+### ⚠️ Pasca č. 1: doplnok smie byť len na osi bicykla
+
+Toto je dôležitejšie než výber konkrétnych brašní. V [01](01-bicykle-na-pozadi.md) stojí pravidlo,
+na ktorom je postavené, že sa kreslí päť smerov namiesto ôsmich:
+
+> **Nekresliť smery doľava.** Podmienka preklápania je, že bicykel nesmie mať nič asymetrické —
+> nápis, tašku na jednej strane, reťaz ani prehadzovačku.
+
+Doplnok mimo osi teda **nezdraží o pár obrázkov, ale zdvihne celé kreslenie z 5 smerov na 8** —
+a to spätne, pre všetky typy a všetky snímky.
+
+| Doplnok | Na osi? |
+|---|---|
+| brašňa pod sedlom, do rámu, na riaditkách | ✅ |
+| náklad v cargo debne | ✅ |
+| bočné pannier-y | ❌ |
+| kuriérska taška cez rameno | ❌ a navyše ju nemá kto niesť — na spritoch nie je jazdec |
+
+Kuriérska taška je z toho najväčšia škoda, lebo je to ikona remesla. Visí ale na jednom boku.
+
+⚠️ **Toto patrí aj do zadania pre grafika v [01](01-bicykle-na-pozadi.md)**, kým sa nezačnú kresliť
+doplnky. Zatiaľ je to zapísané len tu.
+
+### Druhá farba — 36 kombinácií za nula obrázkov
+
+Sheet už dnes nesie dve vrstvy (telo, vidlica) a `prefarbeny(z, telo, vidlica)` v `sandbox.html`
+už berie **dva** parametre — len im dnes podsúvame odvodenú dvojicu tmavá/svetlá. Ak sa vidlica
+stane druhou voľbou jazdca, je to **6 × 6 = 36 kombinácií a nula nových spritov**. A je to reálne
+fixkárske: kontrastná vidlica je vec, ktorú si ľudia na custom rámoch naozaj riešia.
+
+Samo o sebe to zdvihne počet vzhľadov z 12 na ~28, a so smerom zaparkovania na ~140 — čím sa
+riziko tapety z „⚠️ Riziko: opakovanie" vybaví skôr, než sa čokoľvek nakreslí.
+
+Dve podmienky, bez ktorých to nefunguje:
+
+1. **Neponúkať všetkých 36, ale ~14 autorovaných dvojíc.** Časť kombinácií na svetlom alebo
+   tmavom pozadí zdochne a časť je jednoducho škaredá. Odladiť sa dá zoznam, nie súčin. Je to ten
+   istý argument ako v „Prečo šesť farieb a nie picker", len o úroveň vyššie.
+2. **Cache musí byť per-vrstva, nie per-dvojica.** Dnes je kľúč `telo|vidlica`; pri 36
+   kombináciách by sa prefarbovalo každý snímok. Riešenie: 6 prefarbených tiel + 6 vidlíc a dva
+   `drawImage` na bicykel. Pamäť ostane na ~8,6 MB z tabuľky Čísel, len sa kreslí dvakrát.
+
+### Riaditká — a trik s povinnou vrstvou
+
+Na fixke sú riaditká *tá* vec, o ktorej sa ľudia hádajú, a pri pohľade 45° zhora sa **drops /
+bullhorn / flat** naozaj odlíšia. 3 typy × 5 smerov = **15 obrázkov**.
+
+Trik, ktorý obchádza problém s prekrývaním: grafik nakreslí **základný bicykel bez riaditiek**
+a riaditká sú **povinná vrstva**, nie voliteľný overlay. Odpadá tým hádanie, či doplnok spoľahlivo
+prekryl to, čo je pod ním — pod ním nie je nič.
+
+To isté platí pre cargo: **debna sa kreslí prázdna** a náklad je vrstva.
+
+### Náklad na cargu
+
+Vianočný stromček, palma, sud s pivom, paleta, gauč. Päť obrázkov na jeden náklad, takže začať
+tromi a dokresliť neskôr (je to nový stĺpec, viď nižšie — nikomu sa tým nič nepokazí).
+
+Náklad má oproti brašniam jednu výhodu, ktorá je pre Depo podstatná: **mení siluetu, nie detail.**
+Na 40 px sa brašňa stratí, stromček nie.
+
+### Ako to zapísať do stĺpcov
+
+„Jedna brašňa, dve alebo tri" sa **nesmie** zapísať ako jeden stĺpec `pocet_brasni` s rozsahom
+0–3. Keď raz pribudne štvrtá pozícia, rozsah sa predĺži a prehádže sa to všetkým — presne tá
+pasca z „⚠️ Pasca: zoznamy sa nesmú meniť".
+
+Správne je **každá pozícia ako vlastný stĺpec**, boolean:
+
+```
+brasna.sedlovka   → 0.41  → áno
+brasna.ram        → 0.88  → nie
+brasna.riaditka   → 0.12  → áno
+```
+
+Počet brašní je potom **dôsledok, nie vstup**, a štvrtá pozícia je o rok štvrtý stĺpec, ktorý
+nikomu nič nepohne.
+
+**Náklad takto nejde** — je zo svojej podstaty zoznam, takže sa musí zmraziť rovnako ako typ
+bicykla, teda **pred pridelením prvého odvodeného bicykla**. To isté platí pre riaditká.
+
+### Koľko volieb dať do editora
+
+Návrh: **tri.** Typ → farba tela + vidlice → jeden podpisový prvok (na fixke brašne, na cargu
+náklad). Zvyšok nech sa odvodí zo slugu.
+
+Riaditká, smer zaparkovania a fáza trackstandu sú presne tie veci, ktoré nikoho nebaví voliť, ale
+robia rozdiel medzi „tristo bicyklov" a „tristo ľudí".
 
 ## Depo — stránka, kde sú všetci
 
@@ -319,7 +439,9 @@ Tri detaily, ktoré ten moment rozhodnú:
 2. **Zvýraznený bicykel musí byť nájditeľný** — nech štartuje v strede a nesie menovku. Farba
    potvrdzuje, poloha nájde. „Ten farebný" je pri 300 kusoch na nič, ak je za logom.
 3. **Vlastný náhľadový obrázok pre každého jazdca** (OG image) — jeho bicykel farebne, meno,
-   číslo. To je to, čo sa reálne objaví na Instagrame; link bez náhľadu je polovičná vec.
+   číslo. Tvarom by to mal byť **spokecard**: na alleycatoch je to trofej, ktorú si ľudia z pretekov
+   nechávajú v kolese. Na sprite sa nezmestí (viď Zamietnuté), ale ako zdieľaný obrázok je to
+   presne tá vec — a stojí nula spritov. To je to, čo sa reálne objaví na Instagrame; link bez náhľadu je polovičná vec.
 
 To je zároveň jediný dôvod, prečo sa táto vec môže sama zaplatiť: **ľudia zdieľajú svoj bicykel
 a tým lákajú ďalších.**
@@ -409,6 +531,13 @@ Aby sa k nim netreba prehrýzať znova:
 - ❌ **Voľná paleta / RGB picker** (20. 8. 2026) — pamäť, a čitateľnosť na svetlom aj tmavom
   pozadí sa nedá odladiť pre ľubovoľnú hodnotu.
 - ❌ **Štartové číslo ako ID v URL** (20. 8. 2026) — prečíslovanie rozbije zdieľané odkazy.
+- ❌ **Vozík s vlajočkou** (21. 8. 2026) — nie je to vec, ktorá by sa v tomto svete čítala ako
+  reálna, a náklad v cargo debne robí to isté lacnejšie a bez logiky poradia vykreslenia.
+  (Pre poriadok: trailery v cargo pretekoch reálne existujú, ale na obrazovke to tak nevyzerá.)
+- ❌ **Spokecard na sprite** (21. 8. 2026) — točí sa s kolesom, čiže 20 snímok, a pri 40 px sú
+  z neho tri pixely. Patrí na OG obrázok jazdca, nie na bicykel.
+- ❌ **Doplnok mimo osi bicykla** (21. 8. 2026) — bočné brašne aj kuriérska taška cez rameno
+  rozbijú preklápanie a zdvihnú kreslenie z 5 smerov na 8.
 
 ## Otvorené
 
@@ -418,5 +547,7 @@ Aby sa k nim netreba prehrýzať znova:
 - Či fixka nahrádza mestský a velociped, alebo pribúda k nim (viď nesúlad vyššie).
   ⚠️ Ak sa pôjde cestou odvodeného bicykla, **toto sa musí rozhodnúť skôr, než sa pridelí prvý
   odvodený bicykel** — potom sa zoznam typov nedá zmeniť bez premiešania všetkých.
-- Brašne a vozík — možnosť, nie rozhodnutie
+- Doplnky — brašne, riaditká, náklad. Možnosť, nie rozhodnutie; konkrétne kusy sa dohodnú
+  s grafikom.
+- Či pôjde vidlica ako druhá voľba jazdca, a ktorých ~14 dvojíc farieb sa autoruje.
 - Editor avatara pred registráciou (postav si bicykel, potom sa prihlás) vs. až po zaplatení
