@@ -59,6 +59,24 @@ Overené 24. 8. 2026. Rozbor v [docs/ideas/03-spoke-card-generator.md](ideas/03-
 **Nenašiel sa žiadny online generátor spoke cards.** Hľadané 24. 8. 2026 — existujú len DIY
 návody a Bike Index (karty s QR kódom na registráciu bicykla proti krádeži).
 
+## Interaktívna 3D karta — Vercel Ship '24 badge
+
+Overené 24. 8. 2026. Rozbor v [docs/ideas/03-spoke-card-generator.md](ideas/03-spoke-card-generator.md),
+sekcia „Interaktívna 3D karta na webe".
+
+- [Vercel — Building an interactive 3D event badge with React Three Fiber](https://vercel.com/blog/building-an-interactive-3d-event-badge-with-react-three-fiber)
+  — pôvodný článok. Stack, princíp šnúrky, ťahanie, materiál. **Zdroják Vercelu zverejnený nie je**,
+  v článku je len embednutý sandbox.
+- [github.com/daffahaidar/interactive-3d-event-badge](https://github.com/daffahaidar/interactive-3d-event-badge)
+  — komunitná rekonštrukcia, `components/band.tsx`, 222 riadkov. Prečítané celé.
+  ⚠️ **bez licencie** — čítať sa dá, kopírovať nie.
+- [github.com/hjopel/vercel-3d-card](https://github.com/hjopel/vercel-3d-card) — ďalšia
+  rekonštrukcia, **MIT**
+- [github.com/Pavel-Surkov/3d-badge](https://github.com/Pavel-Surkov/3d-badge) — ⚠️ bez licencie
+
+Referenčné obrázky sú v repe: [3D render](ideas/03-referencia-vercel-badge-3d.webp) a
+[fyzická visačka na evente](ideas/03-referencia-vercel-badge-realny.webp).
+
 ## Instagram účty ročníkov
 
 - [@ecmc2027](https://www.instagram.com/ecmc2027/) — náš

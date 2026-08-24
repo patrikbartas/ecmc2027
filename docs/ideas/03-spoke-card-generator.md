@@ -1,11 +1,11 @@
 # Spoke card generátor — karta, ktorá vyjde z webu do kolesa
 
 **Stav:** 💡 Nápad — nič sa nestavia, nič nie je rozhodnuté
-**Zapísané:** 24. 8. 2026
+**Zapísané:** 24. 8. 2026, doplnené 24. 8. 2026 o interaktívnu 3D kartu
 **Súvisí s:** [02-avatar-jazdca.md](02-avatar-jazdca.md) — bicykel jazdca môže byť grafikou na
 karte; zápis tam už spoke card raz spomína (viď „Vzťah k avatarovi" nižšie)
 
-⚠️ **Toto nie je plán ani rozhodnutie o technológii.** Je to zápis rozpravy z 24. 8. 2026, aby sa
+⚠️ **Toto nie je plán ani rozhodnutie o technológii.** Je to zápis rozpráv z 24. 8. 2026, aby sa
 na to nezabudlo. Všetko technické nižšie je odhad — kým na to príde reč, môže sa ukázať
 jednoduchšie riešenie, iný stack alebo iný rozsah.
 
@@ -149,6 +149,121 @@ Rovnaký zápis hovorí, že spokecard patrí **na OG obrázok jazdca**. To sa s
 ak má jazdec unikátnu URL (viď [02](02-avatar-jazdca.md), „Unikátna URL jazdca"), jeho
 vygenerovaná karta môže **byť** tým OG obrázkom. Jeden render, dve použitia.
 
+## Interaktívna 3D karta na webe
+
+**Zapísané 24. 8. 2026.** Nápad: na stránke, kde si prihlásený účastník navrhuje kartu, nie je
+statický náhľad, ale **karta, ktorou sa dá na obrazovke hýbať** — chytíš ju myšou alebo prstom
+a ona reaguje.
+
+Predloha je **Vercel Ship '24 badge** — visačka na šnúrke, ktorá visí z vrchu obrazovky, dá sa
+za ňu ťahať a fyzika ju dohojdá. Vercel k tomu napísal článok aj s kódom:
+[Building an interactive 3D event badge with React Three Fiber](https://vercel.com/blog/building-an-interactive-3d-event-badge-with-react-three-fiber).
+
+| Na webe | Naozaj |
+|---|---|
+| ![Vercel Ship 24 badge — 3D render visačky na šnúrke](03-referencia-vercel-badge-3d.webp) | ![Rovnaká visačka fyzicky na krku účastníka Vercel Ship 24](03-referencia-vercel-badge-realny.webp) |
+
+**A práve toto je na tom to podstatné.** Nie je to efekt na stránke — je to **tá istá vec
+v dvoch podobách**. Na webe si ju pohojdáš, na evente ju máš na krku. Presne to chceme aj my:
+na webe si kartu roztočíš, na pretekoch ju máš v kolese. Interaktívna karta nie je ozdoba
+generátora, je to **jeho druhá polovica**.
+
+### Ako to Vercel spravil
+
+Prečítané 24. 8. 2026 z článku aj z komunitnej rekonštrukcie
+([`daffahaidar/interactive-3d-event-badge`](https://github.com/daffahaidar/interactive-3d-event-badge),
+`components/band.tsx`, 222 riadkov). Odkazy sú v [docs/zdroje.md](../zdroje.md).
+
+Stack: **React Three Fiber + Drei + react-three-rapier** (fyzika Rapier) + **meshline** na hrubú
+čiaru, model pripravený v Blenderi. Vercel píše, že jadro je ~80 riadkov väčšinou deklaratívneho
+kódu — a sedí to.
+
+| Časť | Ako |
+|---|---|
+| **Šnúrka** | Štyri rigid bodies `fixed → j1 → j2 → j3` pospájané `useRopeJoint`. Karta visí na poslednom cez `useSphericalJoint` s odsadením. |
+| **Kreslenie šnúrky** | Cez tie štyri body sa každý frame preloží `CatmullRomCurve3` (`curveType = "chordal"`), z nej `getPoints(32)` → do `meshLineGeometry`. |
+| **Ťahanie** | `state.pointer` sa cez `.unproject(camera)` preloží do 3D. Počas ťahania sa karta prepne z `dynamic` na **`kinematicPosition`** a posúva sa cez `setNextKinematicTranslation`. Po pustení späť na `dynamic`. |
+| **Aby neukázala chrbát** | Každý frame sa uberá uhlová rýchlosť okolo Y: `ang.y - rot.y * 0.25`. |
+| **Materiál** | `meshPhysicalMaterial`, `clearcoat={1}`, `clearcoatRoughness={0.15}`, `roughness={0.3}`, `metalness={0.5}`. |
+| **Text na karte** | Meno cez `<Text>`, respektíve `<RenderTexture>` — druhá scéna vyrenderovaná do textúry. |
+
+⚠️ **Licencie.** Kód v článku je ilustračný. Z komunitných rekonštrukcií má
+[`hjopel/vercel-3d-card`](https://github.com/hjopel/vercel-3d-card) **MIT**, ostatné dve nemajú
+licenciu žiadnu — z tých sa dá čítať princíp, nie kopírovať kód.
+
+### Laminát je pre tento materiál lepší objekt než ich visačka
+
+`clearcoat={1}` a nízka `roughness` je doslova „lesklá plastová vrstva na potlači". Vercel to
+používa, aby ich visačka vyzerala ako drahý plast. **Naša karta tou lesklou plastovou vrstvou
+naozaj je** — zalaminovaný papier je presne tento materiál.
+
+A jeden detail, ktorý to predá: **ten ~1 cm číry presah laminátu okolo potlače**. V 3D je to
+priehľadný lem okolo obdĺžnika s grafikou. Stojí skoro nič a okamžite sa to prečíta ako reálna
+zalaminovaná karta, nie ako render.
+
+### Ako sa karta správa — štyri varianty, žiadny zamietnutý
+
+**Nič z toho nie je rozhodnuté a Patrik to preberie s komunitou.** Sú to štyri rôzne odpovede na
+otázku „čo je pre spoke card to, čo je pre badge visenie na šnúrke".
+
+**A. Na šnúrke — priamy prenos Vercel efektu.**
+Karta visí zhora, ťaháš za ňu, dohojdá sa. Najmenej práce, lebo sa dá prevziať princíp aj tvar
+riešenia. Argument *za*: spoke cards sa bežne dierujú (dierkovač je aj v DIY návodoch), vešajú sa
+na kľúčenky a na batohy — visiaca karta nie je vymyslený objekt. Argument *proti*, ktorý treba
+položiť komunite: šnúrka je konferenčná rekvizita a spoke card je vec do kolesa, takže časť ľudí
+to môže prečítať ako visačku s našou grafikou. **Otázka pre komunitu, nie verdikt.**
+
+**B. Voľná karta v priestore.**
+Chytíš ju, hodíš, ona sa preklopí a **uvidíš chrbát**. To sa priamo hodí k tomu, že karta je
+obojstranná (viď „Predná a zadná strana"). Fyzikálne je to len doska s odporom vzduchu — odpadá
+povraz aj MeshLine, ostane drag cez `unproject` a prepínanie `kinematicPosition`/`dynamic`.
+
+**C. Karta v kolese.**
+Karta sedí medzi špicami, roztočíš koleso a ona sa točí s ním, kmitá, laminát chytá odlesky. Je
+to jej prirodzené prostredie a zároveň si na tom človek osaháva vec, ktorá je zapísaná nižšie ako
+pasca — že **karta nemá „hore", lebo sa točí**.
+
+**D. Kombinácia B + C.**
+Karta začne voľne a keď ju pustíš blízko kolesa, **zacvakne sa medzi špice**. To je moment, ktorý
+si ľudia natočia a hodia na Instagram.
+
+### Prečo to nie je štvrtý nezávislý nápad
+
+Ak sa to spraví dobre, **jeden render karty obslúži tri veci naraz**:
+
+```
+jeden render karty
+   ├── textúra na 3D kartu        (náhľad na webe)
+   ├── tlačový súbor              (výroba)
+   └── OG obrázok jazdca          (zdieľanie)
+```
+
+Tým **zmizne pasca „náhľad ≠ výtlačok"** zapísaná nižšie — 3D náhľad nie je druhá implementácia
+tej istej grafiky, je to tá istá grafika nalepená na doske. A OG obrázok jazdca je otvorená vec
+už v [02](02-avatar-jazdca.md).
+
+### Riziká 3D karty
+
+- **Váha.** `three` + `r3f` + `rapier` (wasm) je rádovo stovky kB až megabajt. Na landing page
+  nemysliteľné. Na prihlásenej stránke „moja karta" v poriadku — ale musí sa načítať až tam,
+  lazy, nie v spoločnom balíku.
+- **Mobil.** Ťahanie prstom po canvase bojuje so scrollovaním stránky. Riešiteľné, ale je to
+  práca navyše — a na mobile to bude používať väčšina ľudí.
+- **Vizuálny rozpor.** Depo je pixel art, toto je fotorealistický 3D plast. Dva rôzne svety na
+  jednom webe. Nie je to blokujúce (sú to dve rôzne stránky), ale ak sa má karta objaviť aj
+  v Depe, treba to vedieť dopredu.
+- **Fallback.** Bez WebGL musí ostať obyčajný 2D obrázok karty. Plus `prefers-reduced-motion` —
+  rovnaká povinnosť ako v [01](01-bicykle-na-pozadi.md) a [02](02-avatar-jazdca.md).
+- **Rapier je wasm** — pri serverovom renderovaní sa to musí ošetriť.
+
+### Lacnejšia cesta, keby sa zúžili termíny
+
+**2D karta s naklápaním a holografickým leskom laminátu** — CSS transform plus shader na odlesk,
+nula fyziky, nula three.js. Dá možno 70 % toho pocitu za 5 % váhy.
+
+Nevie preklopiť kartu s dôveryhodnou zotrvačnosťou a nevie ju zacvaknúť do kolesa. Ak je cieľ
+poriadny nástroj, 3D je správna voľba — ale nech je zapísané, že táto možnosť existuje.
+
 ## Čo bude bolieť
 
 ### 1. Vlastná fotka je väčšina ceny celého nápadu
@@ -255,3 +370,8 @@ Zatiaľ nič. Diskusia je na začiatku — sem pribudnú veci aj s dôvodom, nec
   vyrobiť skôr, než sú čísla známe.
 - **Či sa karta viaže na avatar** z Depa, alebo je to samostatná vec.
 - **Paleta** — viď vyššie.
+- **Ako sa 3D karta správa** — šnúrka / voľná / v kolese / kombinácia. Patrik to preberie
+  s komunitou; žiadny variant nie je zamietnutý.
+- **Či 3D karta je súčasťou generátora, alebo samostatná stránka** „moja karta" pre prihláseného.
+- **Odkiaľ sa berie model karty** — Blender ako u Vercelu, alebo poskladaná doska priamo v kóde.
+  Pri obyčajnom obdĺžniku s hrúbkou a zaoblenými rohmi model možno netreba vôbec.
