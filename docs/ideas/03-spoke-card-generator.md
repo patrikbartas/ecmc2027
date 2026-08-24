@@ -64,14 +64,16 @@ Norma neexistuje. Ustálilo sa to okolo:
 
 Laminuje sa s **presahom ~1 cm okolo**, inak sa to v kolese rozpadne. Rohy sa väčšinou zaoblia.
 
-### Online generátor spoke cards neexistuje
+### Existujúce nástroje — čo sa dá odpozerať
 
-Hľadané 24. 8. 2026 — nenašiel sa žiadny. Existujú len DIY návody typu „vystrihni si štvorec
-z tvrdého papiera" a **Bike Index**, ktorý tlačí karty s QR kódom na registráciu bicykla proti
-krádeži. Nikto to nespravil ako webový nástroj.
+Hľadané 24. 8. 2026, aby sme vedeli, či niekde nie je hotový nástroj, z ktorého sa dá vyjsť.
+Našli sa len DIY návody typu „vystrihni si štvorec z tvrdého papiera" a **Bike Index**, ktorý
+tlačí karty s QR kódom na registráciu bicykla proti krádeži. Webový generátor spoke cards sme
+nenašli žiadny.
 
-To je pre nás skôr príležitosť než varovanie — ale aj signál, že si to budeme musieť vymyslieť
-celé sami, lebo nie je čo odpozerať.
+Takže **dizajn generátora je celý náš** — od toho, čo si človek volí, cez logiku série až po
+tlačový výstup. Nie je to prekážka, je to práve tá práca, ktorú tu chceme spraviť: prvý nástroj
+tohto druhu a zároveň vizuál ECMC 2027.
 
 ## Prečo to stojí za to
 
