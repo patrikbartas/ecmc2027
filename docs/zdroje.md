@@ -37,6 +37,28 @@ Všetko overené 18. 8. 2026.
   vlastností z hashu, nie kvôli kresleniu — rozbor v
   [docs/ideas/02-avatar-jazdca.md](ideas/02-avatar-jazdca.md). Overené 20. 8. 2026.
 
+## Spoke cards
+
+Overené 24. 8. 2026. Rozbor v [docs/ideas/03-spoke-card-generator.md](ideas/03-spoke-card-generator.md).
+
+- [Wikipedia — Spoke card](https://en.wikipedia.org/wiki/Spoke_card) — pôvod, tarotové karty
+  so štartovým číslom, Spokepoker, laminovanie, posun významu (pamiatka na zabitých kuriérov,
+  politický nosič)
+- [Mediamatic — Spoke Cards](https://www.mediamatic.net/en/page/51717/spoke-cards) — **archív
+  zbierky** kariet z celého sveta, 90. roky až 2009. Dôkaz, že sa zbierajú. Aj zmienka o rôznych
+  verziách pre pretekára a crew.
+- [Jody Barton — ECMC 2016 Kodaň](https://jodybarton.co.uk/blog/ecmc-european-cycle-messenger-championships-16/)
+  — spoke cards a štartové čísla ako súčasť vizuálnej identity ročníka
+- [Wikipedia — Alleycat race](https://en.wikipedia.org/wiki/Alleycat_race) — kontext, prvý
+  alleycat Toronto 1989, rozšírenie cez CMWC Berlín 1993
+- [Blackstone Heritage Corridor — Make a Spoke Card](https://blackstoneheritagecorridor.org/learning/gearheads/blueprints/make-a-spoke-card/)
+  — DIY návod, rozmery a laminovanie s presahom
+- [Chicago Reader — bike messenger culture refuses to die](https://chicagoreader.com/city-life/chicago-courier-classic-bike-messenger-culture/)
+  — súčasný stav kuriérskej scény
+
+**Nenašiel sa žiadny online generátor spoke cards.** Hľadané 24. 8. 2026 — existujú len DIY
+návody a Bike Index (karty s QR kódom na registráciu bicykla proti krádeži).
+
 ## Instagram účty ročníkov
 
 - [@ecmc2027](https://www.instagram.com/ecmc2027/) — náš
