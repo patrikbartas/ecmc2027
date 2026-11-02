@@ -18,7 +18,7 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 ### Pridané
 
 - **Návrh s termínom, miestom a kontaktom v `sandbox.html`** — v štyroch rohoch okolo
-  loga: 1.–5. júla 2027 (preteky 3.–4. 7.), Mlynská dolina, `info@ecmc2027.com`,
+  loga: 1.–4. júla 2027 (preteky 3.–4. 7.), Mlynská dolina, `info@ecmc2027.com`,
   Instagram. Čaká na schválenie tímom, na index zatiaľ nejde.
 
 - **Nová sada bicyklov v `sandbox.html`** — mestský bicykel v bunke 96 px namiesto 48,
