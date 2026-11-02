@@ -19,7 +19,7 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 
 - **Návrh s termínom, miestom a kontaktom v `sandbox.html`** — v štyroch rohoch okolo
   loga: 1.–4. júla 2027 (preteky 3.–4. 7.), registrácia v Novej Tržnici, `info@ecmc2027.com`,
-  Instagram. Čaká na schválenie tímom, na index zatiaľ nejde.
+  Instagram. Tím schválil, na index išlo 2026-11-02.
 - **Odpočet do začiatku v `sandbox.html`** — pod termínom namiesto „Race weekend 3–4 July“:
   „240 days, 13 hours, 13 minutes to go“ (na telefóne skrátene „240d 13h 13m to go“),
   počíta do polnoci 1. 7. 2027. Počas podujatia „Happening now“.
@@ -39,6 +39,27 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
   s logom. Nová dvojfarebná sada a iné farby sa zapínajú v paneli (H).
 - Sprity sa v sandboxe prefarbujú v JS, nie CSS filtrom — `brightness(0)` vie prefarbiť
   jednofarebný obrázok, dvojfarebný by zhasol celý aj s vidlicou
+
+---
+
+## 2026-11-02
+
+Prvé informácie o podujatí na ostrej stránke.
+
+### Pridané
+
+- **Termín, registrácia a kontakt v rohoch okolo loga** — 1.–4. júla 2027, registrácia
+  v Novej Tržnici, `info@ecmc2027.com` pre sponzoring a kontakt, odkaz na Instagram.
+- **Odpočet do začiatku** pod termínom — „240 days, 13 hours, 13 minutes to go“, na
+  telefóne skrátene „240d 13h 13m to go“. Počas podujatia „Happening now“, bez JavaScriptu
+  a po podujatí „Race weekend 3–4 July“.
+- **Klik na termín pridá podujatie do kalendára** — iPhone a Mac cez súbor `ecmc2027.ics`,
+  ostatní cez Google Kalendár. Klik na Novú Tržnicu otvorí Google Mapy.
+
+### Zmenené
+
+- Titulok a popis pre vyhľadávače a zdieľanie odkazu nesú termín namiesto „coming soon“.
+- Jazyk stránky je angličtina (`lang="en"`), keďže všetok text na nej je po anglicky.
 
 ---
 

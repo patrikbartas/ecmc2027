@@ -6,7 +6,7 @@ Web pre **European Cycle Messenger Championships 2027** — 31. ročník majstro
 
 ## Aktuálny stav
 
-Landing page. **Jeden `index.html`, ~2,8 KB, nula JavaScriptu.** Vycentrované logo, ktoré rotuje šiestimi farbami. Žiadny viditeľný text.
+Landing page. **Jeden `index.html` s inline CSS a JS, bez závislostí.** Vycentrované logo, ktoré rotuje šiestimi farbami, a v rohoch termín (1.–4. 7. 2027), miesto registrácie (Nová Tržnica), `info@ecmc2027.com` a odkaz na Instagram. JavaScript je len odpočet do začiatku, odkaz do Google Kalendára a skryté pixelové bicykle na klávese B — bez neho stránka funguje celá. Termín je aj v `ecmc2027.ics`; pri zmene termínu treba upraviť obe miesta.
 
 Live na [ecmc2027.com](https://ecmc2027.com).
 
@@ -28,7 +28,7 @@ Push do `main` → Vercel nasadí automaticky za ~2 s. Žiadny build krok, žiad
 
 ## Čo blokuje ďalšiu prácu
 
-Termín podujatia, miesto/HQ a existencia právneho subjektu (kvôli Stripe). Detaily v `docs/06-otvorene-otazky.md`.
+Termín je známy: **1.–4. 7. 2027** (štvrtok–nedeľa), preteky cez víkend 3.–4. 7. Registrácia bude v Novej Tržnici na Trnavskom mýte; miesto pretekov a HQ sa zatiaľ nezverejňujú. Otvorená ostáva existencia právneho subjektu (kvôli Stripe). Detaily v `docs/06-otvorene-otazky.md`.
 
 ## Nápady
 

@@ -4,8 +4,8 @@
 
 ## Blokujúce — bez toho sa web nepohne
 
-1. **Kedy presne to bude?** Termín je prvá vec, ktorú každý na webe hľadá. Ročníky sa pohybujú medzi májom a septembrom.
-2. **Kde bude HQ?** Salzburg mal park + obchod, Berlín Tempelhofer Feld. Určuje mapu, ubytovanie aj dopravu.
+1. ~~**Kedy presne to bude?**~~ ✅ **1.–4. 7. 2027** (štvrtok–nedeľa). Preteky cez víkend 3.–4. 7., sprievodný program vo štvrtok a v piatok. Rozhodnuté 11/2026.
+2. **Kde bude HQ?** Čiastočne ✅ — registrácia bude v **Novej Tržnici** (Trnavské mýto). Miesto pretekov a HQ sa zatiaľ nezverejňujú. Salzburg mal park + obchod, Berlín Tempelhofer Feld. Určuje mapu, ubytovanie aj dopravu.
 3. **Je za tým právny subjekt?** (o. z. / s.r.o. / neformálna partia) Toto blokuje Stripe, sponzorské zmluvy aj faktúry.
 
 ## Dôležité
@@ -21,7 +21,7 @@
 9. **Aké jazyky?** Odporúčam EN primárne + SK. Zvážiť DE.
 10. **Prídu ďalšie grafické podklady?** Momentálne mám len farby a čakám na SVG logo. Bude typografia, fotky, ilustrácie?
 11. **Sociálne siete** — okrem [Instagramu](https://www.instagram.com/ecmc2027/) plánujete Facebook / newsletter?
-12. **Chcete e-mail na doméne?** (`info@ecmc2027.com`) MX záznamy máš na WebSupporte, dá sa to.
+12. ~~**Chcete e-mail na doméne?**~~ ✅ `info@ecmc2027.com` na WebSupporte, je na webe ako kontakt pre sponzoring.
 13. **Bude „generálka"?** Velo Bund spravil Austrian CMC 2023 dva roky pred ECMC 2025. Slovenský/lokálny šampionát 2026 by bol dobrý test aj marketing.
 
 ## Čo si overím sám

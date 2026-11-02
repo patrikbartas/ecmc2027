@@ -7,9 +7,11 @@ Live na [ecmc2027.com](https://ecmc2027.com).
 
 ## Čo je teraz hotové
 
-Landing page. Jeden statický `index.html` s inline CSS, bez JavaScriptu a bez závislostí —
-vycentrované logo, ktoré rotuje šiestimi farbami. Deploy cez Vercel, automaticky pri push do
-`main`.
+Landing page. Jeden statický `index.html` s inline CSS, bez závislostí — vycentrované logo,
+ktoré rotuje šiestimi farbami, a v rohoch termín (1.–4. 7. 2027) s odpočtom, miesto
+registrácie (Nová Tržnica), kontakt a Instagram. Klik na termín pridá podujatie do kalendára.
+JavaScript je len odpočet, odkaz do kalendára a skryté bicykle na klávese B. Deploy cez
+Vercel, automaticky pri push do `main`.
 
 ## Čo je v repe
 
@@ -18,6 +20,7 @@ vycentrované logo, ktoré rotuje šiestimi farbami. Deploy cez Vercel, automati
 | `index.html` | ostrá landing page |
 | `sandbox.html` | ihrisko na prototypy (`noindex`), do ostrej stránky idú až po odsúhlasení |
 | `logo.svg` | artwork od grafika, vykresľuje sa ako CSS maska |
+| `ecmc2027.ics` | udalosť do kalendára (odkaz z termínu na webe); pri zmene termínu upraviť aj JS v `index.html` |
 | `assets/sprites/` | pixel art bicyklov pre nápad s pozadím |
 | `tools/` | pomocné skripty (skladanie sprite sheetu) |
 | `docs/` | znalostná báza o podujatí a o webe |

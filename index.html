@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="sk">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ECMC 2027 Bratislava — coming soon</title>
-<meta name="description" content="ECMC 2027 Bratislava — coming soon.">
+<title>ECMC 2027 Bratislava — 1–4 July 2027</title>
+<meta name="description" content="European Cycle Messenger Championships 2027. 1–4 July 2027, Bratislava, Slovakia. Race weekend 3–4 July, registration at Nová Tržnica.">
+<meta property="og:title" content="ECMC 2027 Bratislava — 1–4 July 2027">
+<meta property="og:description" content="European Cycle Messenger Championships, Bratislava. Race weekend 3–4 July, registration at Nová Tržnica.">
 <meta name="theme-color" content="#410056">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23410056'/></svg>">
 <style>
@@ -34,7 +36,7 @@
   #plocha.mozem-chytit{cursor:grab}
   #plocha.chytam{cursor:grabbing}
 
-  a{
+  .odkaz-logo{
     position:relative;
     z-index:1;
     display:flex;
@@ -55,6 +57,29 @@
   }
   /* Skryté pre oči, čitateľné pre vyhľadávače a čítačky obrazovky */
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+  /* Rohy: termín, miesto, kontakt, IG. Hlavný riadok je vždy pri okraji
+     obrazovky, popis bližšie k logu. Žiadna priehľadnosť – pri šiestich
+     pozadiach by na červenej a tyrkysovej klesol kontrast. */
+  .rohy{position:fixed;inset:0;z-index:2;pointer-events:none;
+        display:grid;grid-template-columns:1fr 1fr;align-content:space-between;column-gap:16px;
+        padding:clamp(16px,3.2vmin,36px);
+        font-size:clamp(11px,1.1vw,14px);line-height:1.35;letter-spacing:.06em;text-transform:uppercase;
+        color:var(--white);animation:fg var(--cycle) step-end infinite}
+  .rohy > :nth-child(even){text-align:right}
+  .rohy .p{font-size:1.3em;font-weight:700;letter-spacing:.02em}
+  .rohy a{color:inherit;text-decoration:none;pointer-events:auto}
+  .rohy a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.18em}
+  .rohy .mail{text-transform:none;letter-spacing:0}
+  /* Obálka pri maile – SVG namiesto znaku ✉, ten by sa na iPhone ukázal ako farebný emoji */
+  .rohy .ikona{width:.95em;height:.72em;overflow:visible}
+  /* Najužšie telefóny (320 px) – inak sa dlhšie riadky lámu do dvoch */
+  @media (max-width:359px){.rohy{font-size:10px;letter-spacing:.02em;column-gap:8px}}
+  /* Odpočet: na telefóne by sa dlhá verzia lámala, preto skrátená. Cifry rovnako
+     široké, aby text pri každej zmene minúty neposkakoval. */
+  #odpocet{font-variant-numeric:tabular-nums}
+  #odpocet .kratky{display:none}
+  @media (max-width:699px){#odpocet .dlhy{display:none} #odpocet .kratky{display:inline}}
 
   @keyframes bg{
     0%,8.33%    {background-color:var(--black)}
@@ -85,21 +110,71 @@
   /* Pri zapnutom obmedzení pohybu v systéme sa farby netočia. Namiesto jednej
      natvrdo zvolenej farby sa stránka riadi svetlým/tmavým režimom systému. */
   @media (prefers-reduced-motion:reduce){
-    body,a,#plocha{animation:none}
+    body,.odkaz-logo,.rohy,#plocha{animation:none}
     body{background:var(--white)}
-    a{color:var(--black)}
+    .odkaz-logo,.rohy{color:var(--black)}
   }
   @media (prefers-reduced-motion:reduce) and (prefers-color-scheme:dark){
     body{background:var(--black)}
-    a{color:var(--white)}
+    .odkaz-logo,.rohy{color:var(--white)}
   }
 </style>
 </head>
 <body>
   <canvas id="plocha" aria-hidden="true"></canvas>
-  <a href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">
+  <a class="odkaz-logo" href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">
     <h1 class="logo"><span class="sr-only">ECMC 2027 Bratislava — European Cycle Messenger Championships</span></h1>
   </a>
+
+  <div class="rohy">
+    <p><a class="p" id="kalendar" href="ecmc2027.ics" title="Add to calendar">1–4 July 2027&nbsp;+</a><br><span id="odpocet">Race weekend 3–4 July</span></p>
+    <p><a class="p" href="https://www.google.com/maps/search/?api=1&amp;query=Nov%C3%A1%20Tr%C5%BEnica%2C%20Bratislava" target="_blank" rel="noopener" title="Open in Google Maps">Nová Tržnica&nbsp;↗</a><br>Registration</p>
+    <p>Sponsoring &amp; contact<br><a class="p mail" href="mailto:info@ecmc2027.com">info@ecmc2027.com&nbsp;<svg class="ikona" viewBox="0 0 16 12" aria-hidden="true"><path d="M1.5 1.5h13v9h-13z M1.5 1.5 8 6.6l6.5-5.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg></a></p>
+    <p>More soon on<br><a class="p" href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">Instagram&nbsp;↗</a></p>
+  </div>
+
+<script>
+/* Rohy: odpočet a odkaz do kalendára.
+   Odpočet do začiatku – polnoc 1. 7. 2027 v Bratislave (letný čas, UTC+2).
+   Bez JavaScriptu ostane v rohu pôvodný text o pretekovom víkende, počas podujatia
+   sa ukáže „Happening now“ a po ňom sa ten pôvodný text vráti. */
+(() => {
+  const ZACIATOK = Date.parse('2027-07-01T00:00:00+02:00');
+  const KONIEC   = Date.parse('2027-07-05T00:00:00+02:00');
+  const el = document.getElementById('odpocet'), povodny = el.textContent;
+  const n = (x, slovo) => `${x} ${slovo}${x === 1 ? '' : 's'}`;
+  let posledny = '';
+  function tik(){
+    const teraz = Date.now();
+    let html;
+    if(teraz >= KONIEC) html = povodny;
+    else if(teraz >= ZACIATOK) html = 'Happening now';
+    else {
+      const m = Math.floor((ZACIATOK - teraz) / 60000);
+      const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), min = m % 60;
+      html = `<span class="dlhy">${n(d,'day')}, ${n(h,'hour')}, ${n(min,'minute')} to go</span>`
+           + `<span class="kratky">${d}d ${h}h ${min}m to go</span>`;
+    }
+    if(html !== posledny){ el.innerHTML = html; posledny = html; }
+  }
+  tik(); setInterval(tik, 1000);
+
+  /* Klik na termín pridá podujatie do kalendára. Apple zariadenia otvoria
+     ecmc2027.ics priamo (iPhone ponúkne „Pridať do kalendára“), ostatní dostanú
+     Google Kalendár s predvyplnenou udalosťou. Bez JavaScriptu ostane .ics pre všetkých.
+     Pri zmene termínu treba upraviť aj ecmc2027.ics. */
+  if(!/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)){
+    const g = new URL('https://calendar.google.com/calendar/render');
+    g.search = new URLSearchParams({
+      action:'TEMPLATE', text:'ECMC 2027 Bratislava', dates:'20270701/20270705',
+      location:'Nová Tržnica, Bratislava',
+      details:'European Cycle Messenger Championships 2027.\nRace weekend 3–4 July. Registration at Nová Tržnica.\nhttps://ecmc2027.com',
+    });
+    const kal = document.getElementById('kalendar');
+    kal.href = g; kal.target = '_blank'; kal.rel = 'noopener';
+  }
+})();
+</script>
 
 <script>
 /* ---------------------------------------------------------------------------
