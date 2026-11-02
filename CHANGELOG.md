@@ -29,7 +29,8 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 ### Zmenené
 
 - Sandbox štartuje s rovnakými bicyklami ako index (stará sada 48 px, 15 kusov,
-  veľkosť 1,4). Nová dvojfarebná sada sa zapína v paneli (H → sada).
+  veľkosť 1,4), aj farebne: biele, a na svetlom pozadí sa preklopia na čierne spolu
+  s logom. Nová dvojfarebná sada a iné farby sa zapínajú v paneli (H).
 - Sprity sa v sandboxe prefarbujú v JS, nie CSS filtrom — `brightness(0)` vie prefarbiť
   jednofarebný obrázok, dvojfarebný by zhasol celý aj s vidlicou
 

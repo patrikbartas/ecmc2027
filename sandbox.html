@@ -139,7 +139,7 @@
       <option value="cierna">statická čierna</option>
       <option value="biela">statická biela</option>
     </select><b></b></div>
-    <div class="r"><span>telo</span><input id="cTelo" type="color" value="#6b6b6b"><b></b></div>
+    <div class="r"><span>telo</span><input id="cTelo" type="color" value="#ffffff"><b></b></div>
     <div class="r"><span>vidlica</span><input id="cVidlica" type="color" value="#ffffff"><b></b></div>
   </div>
 
@@ -238,7 +238,7 @@ function prefarbeny(z, telo, vidlica){
 
 // Farby bicyklov. Vzorkovníky platia pre tmavé pozadie; na svetlom sa obrátia,
 // inak by sivá na bielej zmizla.
-const FARBY = { telo:'#6b6b6b', vidlica:'#ffffff' };
+const FARBY = { telo:'#ffffff', vidlica:'#ffffff' };   // biela = ako logo
 const obrat = hex => '#' + [1,3,5].map(i =>
   (255 - parseInt(hex.substr(i,2),16)).toString(16).padStart(2,'0')).join('');
 
