@@ -104,14 +104,15 @@
 <div class="stred"><div class="logo"></div></div>
 
 <div class="rohy">
-  <p><span class="p">1–4 July 2027</span><br><span id="odpocet">Race weekend 3–4 July</span></p>
-  <p><span class="p">Nová Tržnica</span><br>Registration</p>
+  <p><a class="p" id="kalendar" href="ecmc2027.ics" title="Add to calendar">1–4 July 2027&nbsp;+</a><br><span id="odpocet">Race weekend 3–4 July</span></p>
+  <p><a class="p" href="https://www.google.com/maps/search/?api=1&amp;query=Nov%C3%A1%20Tr%C5%BEnica%2C%20Bratislava" target="_blank" rel="noopener" title="Open in Google Maps">Nová Tržnica&nbsp;↗</a><br>Registration</p>
   <p>Sponsoring &amp; contact<br><a class="p mail" href="mailto:info@ecmc2027.com">info@ecmc2027.com</a></p>
   <p>More soon on<br><a class="p" href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">Instagram&nbsp;↗</a></p>
 </div>
 
 <script>
-/* Odpočet do začiatku – polnoc 1. 7. 2027 v Bratislave (letný čas, UTC+2).
+/* Rohy: odpočet a odkaz do kalendára.
+   Odpočet do začiatku – polnoc 1. 7. 2027 v Bratislave (letný čas, UTC+2).
    Bez JavaScriptu ostane v rohu pôvodný text o pretekovom víkende, počas podujatia
    sa ukáže „Happening now“ a po ňom sa ten pôvodný text vráti. */
 (() => {
@@ -134,6 +135,21 @@
     if(html !== posledny){ el.innerHTML = html; posledny = html; }
   }
   tik(); setInterval(tik, 1000);
+
+  /* Klik na termín pridá podujatie do kalendára. Apple zariadenia otvoria
+     ecmc2027.ics priamo (iPhone ponúkne „Pridať do kalendára“), ostatní dostanú
+     Google Kalendár s predvyplnenou udalosťou. Bez JavaScriptu ostane .ics pre všetkých.
+     Pri zmene termínu treba upraviť aj ecmc2027.ics. */
+  if(!/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)){
+    const g = new URL('https://calendar.google.com/calendar/render');
+    g.search = new URLSearchParams({
+      action:'TEMPLATE', text:'ECMC 2027 Bratislava', dates:'20270701/20270705',
+      location:'Nová Tržnica, Bratislava',
+      details:'European Cycle Messenger Championships 2027.\nRace weekend 3–4 July. Registration at Nová Tržnica.\nhttps://ecmc2027.com',
+    });
+    const kal = document.getElementById('kalendar');
+    kal.href = g; kal.target = '_blank'; kal.rel = 'noopener';
+  }
 })();
 </script>
 

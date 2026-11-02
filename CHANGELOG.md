@@ -23,6 +23,9 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 - **Odpočet do začiatku v `sandbox.html`** — pod termínom namiesto „Race weekend 3–4 July“:
   „240 days, 13 hours, 13 minutes to go“ (na telefóne skrátene „240d 13h 13m to go“),
   počíta do polnoci 1. 7. 2027. Počas podujatia „Happening now“.
+- **Klikateľné horné rohy v `sandbox.html`** — termín pridá podujatie do kalendára
+  (iPhone a Mac cez súbor `ecmc2027.ics`, ostatní cez Google Kalendár), Nová Tržnica
+  otvorí Google Mapy.
 
 - **Nová sada bicyklov v `sandbox.html`** — mestský bicykel v bunke 96 px namiesto 48,
   po prvý raz **dvojfarebný**: sivé telo a bledá predná vidlica, aby bolo vidieť, kam
