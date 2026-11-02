@@ -44,6 +44,11 @@
   .rohy .mail{text-transform:none;letter-spacing:0}
   /* Najužšie telefóny (320 px) – inak sa dlhšie riadky lámu do dvoch */
   @media (max-width:359px){.rohy{font-size:10px;letter-spacing:.02em;column-gap:8px}}
+  /* Odpočet: na telefóne by sa dlhá verzia lámala, preto skrátená. Cifry rovnako
+     široké, aby text pri každej zmene minúty neposkakoval. */
+  #odpocet{font-variant-numeric:tabular-nums}
+  #odpocet .kratky{display:none}
+  @media (max-width:699px){#odpocet .dlhy{display:none} #odpocet .kratky{display:inline}}
 
   @keyframes bg{
     0%,8.33%     {background-color:var(--black)}
@@ -99,11 +104,38 @@
 <div class="stred"><div class="logo"></div></div>
 
 <div class="rohy">
-  <p><span class="p">1–4 July 2027</span><br>Race weekend 3–4 July</p>
+  <p><span class="p">1–4 July 2027</span><br><span id="odpocet">Race weekend 3–4 July</span></p>
   <p><span class="p">Nová Tržnica</span><br>Registration</p>
   <p>Sponsoring &amp; contact<br><a class="p mail" href="mailto:info@ecmc2027.com">info@ecmc2027.com</a></p>
   <p>More soon on<br><a class="p" href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">Instagram&nbsp;↗</a></p>
 </div>
+
+<script>
+/* Odpočet do začiatku – polnoc 1. 7. 2027 v Bratislave (letný čas, UTC+2).
+   Bez JavaScriptu ostane v rohu pôvodný text o pretekovom víkende, počas podujatia
+   sa ukáže „Happening now“ a po ňom sa ten pôvodný text vráti. */
+(() => {
+  const ZACIATOK = Date.parse('2027-07-01T00:00:00+02:00');
+  const KONIEC   = Date.parse('2027-07-05T00:00:00+02:00');
+  const el = document.getElementById('odpocet'), povodny = el.textContent;
+  const n = (x, slovo) => `${x} ${slovo}${x === 1 ? '' : 's'}`;
+  let posledny = '';
+  function tik(){
+    const teraz = Date.now();
+    let html;
+    if(teraz >= KONIEC) html = povodny;
+    else if(teraz >= ZACIATOK) html = 'Happening now';
+    else {
+      const m = Math.floor((ZACIATOK - teraz) / 60000);
+      const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), min = m % 60;
+      html = `<span class="dlhy">${n(d,'day')}, ${n(h,'hour')}, ${n(min,'minute')} to go</span>`
+           + `<span class="kratky">${d}d ${h}h ${min}m to go</span>`;
+    }
+    if(html !== posledny){ el.innerHTML = html; posledny = html; }
+  }
+  tik(); setInterval(tik, 1000);
+})();
+</script>
 
 <div id="panel" hidden>
   <h2>SANDBOX</h2>

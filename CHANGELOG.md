@@ -20,6 +20,9 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 - **Návrh s termínom, miestom a kontaktom v `sandbox.html`** — v štyroch rohoch okolo
   loga: 1.–4. júla 2027 (preteky 3.–4. 7.), registrácia v Novej Tržnici, `info@ecmc2027.com`,
   Instagram. Čaká na schválenie tímom, na index zatiaľ nejde.
+- **Odpočet do začiatku v `sandbox.html`** — pod termínom namiesto „Race weekend 3–4 July“:
+  „240 days, 13 hours, 13 minutes to go“ (na telefóne skrátene „240d 13h 13m to go“),
+  počíta do polnoci 1. 7. 2027. Počas podujatia „Happening now“.
 
 - **Nová sada bicyklov v `sandbox.html`** — mestský bicykel v bunke 96 px namiesto 48,
   po prvý raz **dvojfarebný**: sivé telo a bledá predná vidlica, aby bolo vidieť, kam
