@@ -17,6 +17,10 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 
 ### Pridané
 
+- **Návrh s termínom, miestom a kontaktom v `sandbox.html`** — v štyroch rohoch okolo
+  loga: 1.–5. júla 2027 (preteky 3.–4. 7.), Mlynská dolina, `info@ecmc2027.com`,
+  Instagram. Čaká na schválenie tímom, na index zatiaľ nejde.
+
 - **Nová sada bicyklov v `sandbox.html`** — mestský bicykel v bunke 96 px namiesto 48,
   po prvý raz **dvojfarebný**: sivé telo a bledá predná vidlica, aby bolo vidieť, kam
   bicykel mieri. Prepína sa v paneli (`sada`), stará sada sa dá vypnúť.
@@ -24,6 +28,8 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 
 ### Zmenené
 
+- Sandbox štartuje s rovnakými bicyklami ako index (stará sada 48 px, 15 kusov,
+  veľkosť 1,4). Nová dvojfarebná sada sa zapína v paneli (H → sada).
 - Sprity sa v sandboxe prefarbujú v JS, nie CSS filtrom — `brightness(0)` vie prefarbiť
   jednofarebný obrázok, dvojfarebný by zhasol celý aj s vidlicou
 

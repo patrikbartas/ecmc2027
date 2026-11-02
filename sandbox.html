@@ -27,6 +27,24 @@
   .logo{width:min(58vmin,360px);aspect-ratio:91.99/117.42;background-color:currentColor;
         -webkit-mask:url(logo.svg) center/contain no-repeat;mask:url(logo.svg) center/contain no-repeat}
 
+  /* ---------------- rohy: termín, miesto, kontakt, IG ----------------
+     Hlavný riadok je vždy pri okraji obrazovky (hore pri horných rohoch, dole
+     pri dolných), popis je bližšie k logu. Žiadna priehľadnosť – pri šiestich
+     pozadiach by na červenej a tyrkysovej klesol kontrast. */
+  .rohy{position:fixed;inset:0;z-index:2;pointer-events:none;
+        display:grid;grid-template-columns:1fr 1fr;align-content:space-between;column-gap:16px;
+        padding:clamp(16px,3.2vmin,36px);
+        font-family:ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+        font-size:clamp(11px,1.1vw,14px);line-height:1.35;letter-spacing:.06em;text-transform:uppercase;
+        color:var(--white);animation:fg var(--cycle) step-end infinite}
+  .rohy > :nth-child(even){text-align:right}
+  .rohy .p{font-size:1.3em;font-weight:700;letter-spacing:.02em}
+  .rohy a{color:inherit;text-decoration:none;pointer-events:auto}
+  .rohy a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:.18em}
+  .rohy .mail{text-transform:none;letter-spacing:0}
+  /* Najužšie telefóny (320 px) – inak sa „Mlynská dolina“ láme do dvoch riadkov */
+  @media (max-width:359px){.rohy{font-size:10px;letter-spacing:.02em;column-gap:8px}}
+
   @keyframes bg{
     0%,8.33%     {background-color:var(--black)}
     16.66%,25%   {background-color:var(--red)}
@@ -44,9 +62,9 @@
      sa jedným brightness() prefarbiť nedá. Zlomy nižšie musia sedieť s @keyframes fg. */
 
   /* Statické režimy – systém bicyklov je od farebnej animácie nezávislý. */
-  body.stat, body.stat .stred{animation:none}
-  body.stat-cierna{background:var(--black)}  body.stat-cierna .stred{color:var(--white)}
-  body.stat-biela {background:var(--white)}  body.stat-biela  .stred{color:var(--black)}
+  body.stat, body.stat .stred, body.stat .rohy{animation:none}
+  body.stat-cierna{background:var(--black)}  body.stat-cierna :is(.stred,.rohy){color:var(--white)}
+  body.stat-biela {background:var(--white)}  body.stat-biela  :is(.stred,.rohy){color:var(--black)}
 
   /* ---------------- panel (H) ---------------- */
   #panel{
@@ -80,23 +98,30 @@
 <canvas id="plocha"></canvas>
 <div class="stred"><div class="logo"></div></div>
 
+<div class="rohy">
+  <p><span class="p">1–5 July 2027</span><br>Race weekend 3–4 July</p>
+  <p><span class="p">Mlynská dolina</span><br>Bratislava, Slovakia</p>
+  <p>Sponsoring &amp; contact<br><a class="p mail" href="mailto:info@ecmc2027.com">info@ecmc2027.com</a></p>
+  <p>More soon on<br><a class="p" href="https://www.instagram.com/ecmc2027/" target="_blank" rel="noopener">Instagram&nbsp;↗</a></p>
+</div>
+
 <div id="panel" hidden>
   <h2>SANDBOX</h2>
 
   <div class="skupina">
     <div class="nadpis" style="border:0;padding:0">GRAFIKA</div>
     <div class="r"><span>sada</span><select id="cSada">
+      <option value="stara">iba stará (48 px) – ako na indexe</option>
       <option value="nova">iba nová (96 px)</option>
-      <option value="stara">iba stará (48 px)</option>
       <option value="obe">obe naraz</option>
     </select><b></b></div>
   </div>
 
   <div class="skupina">
     <div class="nadpis">POHYB</div>
-    <div class="r"><span>počet</span><input id="cPocet" type="range" min="1" max="60" value="12"><b id="vPocet">12</b></div>
+    <div class="r"><span>počet</span><input id="cPocet" type="range" min="1" max="60" value="15"><b id="vPocet">15</b></div>
     <div class="r"><span>rýchlosť</span><input id="cRychlost" type="range" min="10" max="300" value="100"><b id="vRychlost">1.0</b></div>
-    <div class="r"><span>veľkosť</span><input id="cMierka" type="range" min="5" max="20" value="10"><b id="vMierka">1.0</b></div>
+    <div class="r"><span>veľkosť</span><input id="cMierka" type="range" min="5" max="20" value="14"><b id="vMierka">1.4</b></div>
     <div class="r"><span>pauzy</span><input id="cPauzy" type="range" min="0" max="100" value="63"><b id="vPauzy">63</b></div>
   </div>
 
@@ -254,7 +279,7 @@ function prisposob(){
 }
 addEventListener('resize', prisposob); prisposob();
 
-const N = {pocet:12, rychlost:1, mierka:1, pauzy:.63, mix:[33,33,34]};
+const N = {pocet:15, rychlost:1, mierka:1.4, pauzy:.63, mix:[33,33,34]};   // = hodnoty v index.html
 let zapnute = false;               // bicykle sú implicitne vypnuté, zapína ich B
 
 // Na telefónoch a tabletoch sa bicykle nepúšťajú vôbec – nie je klávesnica, ťahanie
@@ -265,7 +290,7 @@ const MOBIL = (matchMedia('(pointer:coarse)').matches || innerWidth < 700)
 
 const nah  = (a,b) => a + Math.random()*(b-a);
 
-let aktivnaSada = 'nova';       // nova | stara | obe – prepína sa v paneli
+let aktivnaSada = 'stara';      // stara | nova | obe – prepína sa v paneli
 let rezimPozadia = 'rotacia';
 
 function staryTyp(){
