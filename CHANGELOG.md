@@ -25,7 +25,7 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
   počíta do polnoci 1. 7. 2027. Počas podujatia „Happening now“.
 - **Klikateľné horné rohy v `sandbox.html`** — termín pridá podujatie do kalendára
   (iPhone a Mac cez súbor `ecmc2027.ics`, ostatní cez Google Kalendár), Nová Tržnica
-  otvorí Google Mapy. K mailu pribudla ikonka obálky.
+  otvorí Google Mapy.
 
 - **Nová sada bicyklov v `sandbox.html`** — mestský bicykel v bunke 96 px namiesto 48,
   po prvý raz **dvojfarebný**: sivé telo a bledá predná vidlica, aby bolo vidieť, kam
