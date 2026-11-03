@@ -1,0 +1,8 @@
+# Veci v repe, ktoré nemajú ísť na ecmc2027.com.
+# Vercel tu nič nebuilduje a servíruje súbory tak, ako sú.
+
+# lab/ má vlastný build (Vite + TypeScript) — ako statické súbory by bol nefunkčný
+lab/
+
+# fotka pre lab/krabice — na webe ju zatiaľ nič nepoužíva
+assets/boxes/

@@ -8,6 +8,7 @@ Priečinok na produktové nápady, ktoré ešte nie sú rozhodnuté ani rozpraco
 | [02-avatar-jazdca.md](02-avatar-jazdca.md) | 💡 Nápad; bicykel ako avatar registrovaného jazdca a stránka Depo, zápisy rozpráv z 20. a 21. 8. 2026 |
 | [03-spoke-card-generator.md](03-spoke-card-generator.md) | 💡 Nápad; verejný generátor spoke cards, tlač a výroba pre držiteľov lístka, interaktívna 3D karta, zápisy rozpráv z 24. 8. 2026 |
 | [04-bicykel-sleduje-kurzor.md](04-bicykel-sleduje-kurzor.md) | 💡 Nápad; jeden bicykel ide za kurzorom ako psík — nový stav v existujúcom engine, zapísané 29. 8. 2026 |
+| [05-krabice-3d.md](05-krabice-3d.md) | 🔨 Prototyp v `lab/krabice/`; rozsypané krabice z fotky v 3D, stav A → B, kalibrácia kamery, zapísané 3. 11. 2026 |
 
 ## Ako to používať
 
