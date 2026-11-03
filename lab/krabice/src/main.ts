@@ -5,7 +5,7 @@ import GUI from 'lil-gui';
 // originál 4160 × 3120 — rovnaký záber ako zmenšená verzia 1600 × 1200, len ostrejší
 import fotoUrl from '../../../assets/boxes/IMG_20191118_081300.jpg';
 import { DEFAULTS, defaults, normalize, type Config } from './config';
-import { IDS, STAYS, dropTo, toPose } from './layout';
+import { IDS, STAYS, dropTo, lowestY, toPose } from './layout';
 import { buildTracks, sample, type Track } from './anim';
 import { faceTexture } from './textures';
 
@@ -400,6 +400,7 @@ function select(id: number | null) {
     tc.attach(boxes.get(id)!.mesh);
   }
   ui.box = id === null ? '—' : String(id);
+  syncBoxEdit();
   updateHud();
 }
 
@@ -408,6 +409,60 @@ function commitSelected() {
   const m = boxes.get(selected)!.mesh;
   cfg.b[String(selected)] = toPose({ p: m.position.clone(), q: m.quaternion.clone() });
   changed();
+  syncBoxEdit();
+}
+
+// ── presné hodnoty vybranej krabice ─────────────────────────────────────
+
+/** Poloha (m) a natočenie (°, poradie YXZ: ry dookola, rx dopredu, rz do boku) vo svete. */
+const boxEdit = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 };
+
+function syncBoxEdit() {
+  const on = selected !== null;
+  if (on) {
+    const m = boxes.get(selected!)!.mesh;
+    // zaokrúhlené, aby panel neukazoval 89.99999
+    const r = (v: number, k: number) => Math.round(v * k) / k;
+    boxEdit.x = r(m.position.x, 1e4);
+    boxEdit.y = r(m.position.y, 1e4);
+    boxEdit.z = r(m.position.z, 1e4);
+    const e = new THREE.Euler().setFromQuaternion(m.quaternion, 'YXZ');
+    boxEdit.rx = r(e.x / DEG, 100);
+    boxEdit.ry = r(e.y / DEG, 100);
+    boxEdit.rz = r(e.z / DEG, 100);
+  }
+  for (const c of fPrecise.controllers) {
+    c.enable(on);
+    c.updateDisplay();
+  }
+}
+
+function onBoxEdit() {
+  if (selected === null) return;
+  const m = boxes.get(selected)!.mesh;
+  m.position.set(boxEdit.x, boxEdit.y, boxEdit.z);
+  m.quaternion.setFromEuler(new THREE.Euler(boxEdit.rx * DEG, boxEdit.ry * DEG, boxEdit.rz * DEG, 'YXZ'));
+  commitSelected();
+}
+
+const AXES = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1) };
+
+/**
+ * Otočí krabicu o 90° a nechá ju ležať v rovnakej výške — najnižší roh ostane tam, kde bol.
+ * Osi krabice: x naprieč (boky), y hore, z pozdĺž (čelá s držiakom).
+ */
+function rotateSelected(axis: keyof typeof AXES, local: boolean) {
+  if (selected === null) return;
+  const m = boxes.get(selected)!.mesh;
+  const pose = { p: m.position.clone(), q: m.quaternion.clone() };
+  const level = lowestY(pose, cfg);
+  const r = new THREE.Quaternion().setFromAxisAngle(AXES[axis], Math.PI / 2);
+  if (local) pose.q.multiply(r);
+  else pose.q.premultiply(r);
+  dropTo(pose, cfg, level);
+  m.position.copy(pose.p);
+  m.quaternion.copy(pose.q);
+  commitSelected();
 }
 
 function dropSelected(level: 'ground' | 'platform') {
@@ -424,6 +479,7 @@ function forgetSelected() {
   delete cfg.b[String(selected)];
   changed();
   applyPoses();
+  syncBoxEdit();
 }
 
 function cycle(dir: 1 | -1) {
@@ -462,6 +518,9 @@ const ui = {
   ground: () => dropSelected('ground'),
   platform: () => dropSelected('platform'),
   forget: forgetSelected,
+  turnSide: () => rotateSelected('z', true),
+  turnFront: () => rotateSelected('x', true),
+  turnAround: () => rotateSelected('y', false),
   trailerToA: () => {
     for (const id of STAYS) delete cfg.b[String(id)];
     changed();
@@ -578,9 +637,20 @@ fEdit.add(ui, 'translate').name('posun (W)');
 fEdit.add(ui, 'rotate').name('rotácia (E)');
 fEdit.add(ui, 'ground').name('na zem (G)');
 fEdit.add(ui, 'platform').name('na plošinu (P)');
+fEdit.add(ui, 'turnSide').name('↻ 90° na bok (R)');
+fEdit.add(ui, 'turnFront').name('↻ 90° na čelo (T)');
+fEdit.add(ui, 'turnAround').name('↻ 90° dookola (Y)');
 fEdit.add(ui, 'forget').name('zabudnúť úpravu (Backspace)');
 fEdit.add(ui, 'trailerToA').name('krabice na vozíku = stav A');
 fEdit.add(ui, 'allToGuess').name('všetko späť na odhad');
+
+const fPrecise = fEdit.addFolder('vybraná krabica — presne');
+fPrecise.add(boxEdit, 'ry', -180, 180, 0.1).name('natočenie dookola (°)').onChange(onBoxEdit);
+fPrecise.add(boxEdit, 'rx', -180, 180, 0.1).name('náklon dopredu (°)').onChange(onBoxEdit);
+fPrecise.add(boxEdit, 'rz', -180, 180, 0.1).name('náklon do boku (°)').onChange(onBoxEdit);
+fPrecise.add(boxEdit, 'x', -2, 4, 0.001).name('x (m)').onChange(onBoxEdit);
+fPrecise.add(boxEdit, 'y', -0.2, 1.5, 0.001).name('výška stredu (m)').onChange(onBoxEdit);
+fPrecise.add(boxEdit, 'z', -6, 0, 0.001).name('z (m)').onChange(onBoxEdit);
 
 const fFile = gui.addFolder('Súbor');
 fFile.add(ui, 'save').name('uložiť do scene.json');
@@ -605,6 +675,9 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'e') tc.setMode('rotate');
   else if (k === 'q') tc.setSpace(tc.space === 'local' ? 'world' : 'local');
   else if (k === 'g') dropSelected('ground');
+  else if (k === 'r') rotateSelected('z', true);
+  else if (k === 't') rotateSelected('x', true);
+  else if (k === 'y') rotateSelected('y', false);
   else if (k === 'p') dropSelected('platform');
   else if (k === 'backspace') forgetSelected();
   else if (k === 'escape') select(null);
@@ -644,7 +717,7 @@ function updateHud() {
   const msg = performance.now() < flashUntil ? `\n<b>${flashText}</b>` : '';
   hud.innerHTML =
     `${sel}\n` +
-    `W posun · E rotácia · G na zem · P na plošinu · [ ] ďalšia · Esc zrušiť\n` +
+    `W posun · E rotácia · R / T / Y otočiť o 90° · G na zem · P na plošinu · [ ] ďalšia · Esc zrušiť\n` +
     `kamera: ← → natočenie · ↑ ↓ sklon · PgUp / PgDn výška · Shift ×10 · Alt ÷10 · C gizmo (vo F)\n` +
     `medzerník prehrať · A / B stav · F voľný pohľad · N čísla${msg}`;
 }

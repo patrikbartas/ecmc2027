@@ -131,18 +131,28 @@ export function poseB(id: number, cfg: Config): PoseT {
   return STAYS.has(id) ? poseA(id, cfg) : poseGuess(id, cfg);
 }
 
-/** Posunie krabicu zvislo tak, aby jej najnižší roh bol vo výške `level`. */
-export function dropTo(pose: PoseT, cfg: Config, level: number): void {
+/** O koľko je najnižší roh pod stredom krabice (záporné číslo). */
+function lowestOffset(q: THREE.Quaternion, cfg: Config): number {
   const { w, h, d } = cfg.box;
   let minY = Infinity;
   const c = new THREE.Vector3();
   for (const sx of [-1, 1])
     for (const sy of [-1, 1])
       for (const sz of [-1, 1]) {
-        c.set((sx * w) / 2, (sy * h) / 2, (sz * d) / 2).applyQuaternion(pose.q);
+        c.set((sx * w) / 2, (sy * h) / 2, (sz * d) / 2).applyQuaternion(q);
         minY = Math.min(minY, c.y);
       }
-  pose.p.y = level - minY;
+  return minY;
+}
+
+/** Výška najnižšieho rohu krabice nad cestou. */
+export function lowestY(pose: PoseT, cfg: Config): number {
+  return pose.p.y + lowestOffset(pose.q, cfg);
+}
+
+/** Posunie krabicu zvislo tak, aby jej najnižší roh bol vo výške `level`. */
+export function dropTo(pose: PoseT, cfg: Config, level: number): void {
+  pose.p.y = level - lowestOffset(pose.q, cfg);
 }
 
 const round = (v: number) => Math.round(v * 1e4) / 1e4;

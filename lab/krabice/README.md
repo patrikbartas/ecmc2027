@@ -35,6 +35,7 @@ Na web to nejde — `lab/` a `assets/boxes/` sú v `.vercelignore` v koreni repa
 | **W** / **E** | posun / rotácia |
 | **Q** | gizmo v súradniciach krabice / sveta |
 | **G** / **P** | polož na zem / na plošinu (najnižší roh) |
+| **R** / **T** / **Y** | otoč o 90° — na bok / na čelo / dookola. Krabica ostane ležať v rovnakej výške |
 | **[** **]** | predošlá / ďalšia krabica |
 | **Backspace** | zabudni úpravu krabice (vráti odhad alebo stav A) |
 | **Esc** | zruš výber |
@@ -51,6 +52,9 @@ Panel vpravo: kamera, vozík, rozmer krabice, zobrazenie, čas animácie.
 **Jemné ladenie hodnoty v paneli:** koliesko myši nad posuvníkom alebo číslom (jeden krok),
 ťahanie hore / dole priamo po čísle (s Alt jemnejšie, so Shiftom hrubšie), alebo hodnotu
 napísať a Enter.
+
+**Vybraná krabica — presne** (v Úprave stavu B): natočenie dookola, náklon dopredu a do boku
+v stupňoch a poloha v metroch. Ladí sa rovnako ako kamera — koliesko, ťahanie po čísle, Alt.
 
 Kamera, vozík aj rozmer majú vlastné tlačidlo **↺ predvolené** — vráti len danú časť,
 úpravy stavu B ostanú.
