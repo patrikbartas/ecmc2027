@@ -59,26 +59,30 @@ export function buildTracks(cfg: Config): { tracks: Map<number, Track>; total: n
 
 const smooth = (u: number) => u * u * (3 - 2 * u);
 
-/** Póza krabice v čase t (sekundy od začiatku). */
-export function sample(tr: Track, t: number, outP: THREE.Vector3, outQ: THREE.Quaternion): void {
+/**
+ * Póza krabice v čase t (sekundy od začiatku).
+ * Vráti, koľko z cesty A → B má krabica za sebou (0 … 1) — podľa toho sa otvárajú klapky.
+ */
+export function sample(tr: Track, t: number, outP: THREE.Vector3, outQ: THREE.Quaternion): number {
   const tau = t - tr.start;
   if (tau <= 0) {
     outP.copy(tr.a.p);
     outQ.copy(tr.a.q);
-    return;
+    return 0;
   }
   if (tau >= tr.dur) {
     outP.copy(tr.b.p);
     outQ.copy(tr.b.q);
-    return;
+    return 1;
   }
   const u = tau / tr.dur;
   if (tr.kind === 'fall') {
     outP.copy(tr.a.p).addScaledVector(tr.v0, tau).addScaledVector(GRAVITY, 0.5 * tau * tau);
     outQ.slerpQuaternions(tr.a.q, tr.b.q, u);
-  } else {
-    const k = smooth(u);
-    outP.lerpVectors(tr.a.p, tr.b.p, k);
-    outQ.slerpQuaternions(tr.a.q, tr.b.q, k);
+    return u;
   }
+  const k = smooth(u);
+  outP.lerpVectors(tr.a.p, tr.b.p, k);
+  outQ.slerpQuaternions(tr.a.q, tr.b.q, k);
+  return k;
 }

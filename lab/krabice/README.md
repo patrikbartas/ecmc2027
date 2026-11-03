@@ -46,6 +46,7 @@ Na web to nejde — `lab/` a `assets/boxes/` sú v `.vercelignore` v koreni repa
 | **← →** / **↑ ↓** | natočenie / sklon kamery o 0,1° (Shift 1°, Alt 0,01°) |
 | **PgUp** / **PgDn** | výška kamery o 1 cm (Shift 10 cm, Alt 1 mm) |
 | **N** | skryť / ukázať čísla krabíc |
+| **U** | zapnúť / vypnúť klapky (uška) — bez nich je krabica zavretý kváder |
 
 Panel vpravo: kamera, vozík, rozmer krabice, zobrazenie, čas animácie.
 
@@ -54,7 +55,10 @@ Panel vpravo: kamera, vozík, rozmer krabice, zobrazenie, čas animácie.
 napísať a Enter.
 
 **Vybraná krabica — presne** (v Úprave stavu B): natočenie dookola, náklon dopredu a do boku
-v stupňoch a poloha v metroch. Ladí sa rovnako ako kamera — koliesko, ťahanie po čísle, Alt.
+v stupňoch, poloha v metroch a **4 klapky** 0–180° (0 zavretá, 90 kolmo hore, 180 vyklopená
+naplocho von). Dlhé klapky vľavo a vpravo zakryjú každá polovicu vrchu, krátke vpredu a vzadu
+sú pod nimi. „Vpredu“ je čelo s nápisom PREDOK. V stave A sú klapky zavreté a počas pádu
+sa otvárajú. Ladí sa rovnako ako kamera — koliesko, ťahanie po čísle, Alt.
 
 Kamera, vozík aj rozmer majú vlastné tlačidlo **↺ predvolené** — vráti len danú časť,
 úpravy stavu B ostanú.

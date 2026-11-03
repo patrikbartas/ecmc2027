@@ -4,7 +4,7 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import GUI from 'lil-gui';
 // originál 4160 × 3120 — rovnaký záber ako zmenšená verzia 1600 × 1200, len ostrejší
 import fotoUrl from '../../../assets/boxes/IMG_20191118_081300.jpg';
-import { DEFAULTS, defaults, normalize, type Config } from './config';
+import { DEFAULTS, defaults, normalize, type Config, type Flaps } from './config';
 import { IDS, STAYS, dropTo, lowestY, toPose } from './layout';
 import { buildTracks, sample, type Track } from './anim';
 import { faceTexture } from './textures';
@@ -33,6 +33,7 @@ const view = {
   free: false,
   horizon: true,
   numbers: true,
+  flaps: true,
 };
 
 const anim = { t: 0, playing: false, speed: 1 };
@@ -147,14 +148,94 @@ interface BoxObj {
   mesh: THREE.Mesh;
   edges: THREE.LineSegments;
   mats: THREE.MeshLambertMaterial[];
+  /** vnútro krabice — vidno ho, keď sú klapky otvorené */
+  liner: THREE.Mesh;
+  /** kĺby 4 klapiek v poradí Flaps: vľavo, vpravo, vpredu, vzadu */
+  hinges: THREE.Group[];
 }
 
 const boxes = new Map<number, BoxObj>();
 
+/** Hrúbka kartónu. */
+const T = 0.004;
+const CLOSED: Flaps = [0, 0, 0, 0];
+const flapMat = new THREE.MeshLambertMaterial({
+  color: 0xbd9a68,
+  side: THREE.DoubleSide,
+  transparent: true,
+  opacity: view.opacity,
+});
+const innerMat = new THREE.MeshLambertMaterial({ color: 0x7a5c38, side: THREE.BackSide, transparent: true, opacity: view.opacity });
+const hiddenMat = new THREE.MeshBasicMaterial({ visible: false });
+/** vnútro bez vrchu — poradie stien +x, −x, +y, −y, +z, −z */
+const linerMats = [innerMat, innerMat, hiddenMat, innerMat, innerMat, innerMat];
+
+/**
+ * Klapky, zjednodušene: obdĺžniky na kĺbe hornej hrany.
+ * Dlhé (vľavo / vpravo, kĺb pozdĺž z) siahajú do polovice šírky, takže spolu zavrú vrch.
+ * Krátke (vpredu / vzadu, kĺb pozdĺž x) sú pod nimi, rovnako hlboké.
+ * Uhol 0 = zavretá, 90 = kolmo hore, 180 = vyklopená naplocho von.
+ */
+const FLAPS = [
+  { axis: 'z', side: -1 }, // vľavo
+  { axis: 'z', side: 1 }, // vpravo
+  { axis: 'x', side: 1 }, // vpredu (+z, čelo „PREDOK")
+  { axis: 'x', side: -1 }, // vzadu
+] as const;
+
+function flapsOf(id: number): Flaps {
+  return cfg.flaps[String(id)] ?? CLOSED;
+}
+
+function disposeChildren(g: THREE.Object3D) {
+  for (const o of [...g.children]) {
+    o.traverse((x) => {
+      if (x instanceof THREE.Mesh || x instanceof THREE.LineSegments) x.geometry.dispose();
+    });
+    g.remove(o);
+  }
+}
+
+/** (Pre)stavia klapky a vnútro podľa aktuálneho rozmeru krabice. */
+function buildLid(b: BoxObj) {
+  const { w, h, d } = cfg.box;
+  const depth = w / 2;
+  FLAPS.forEach((f, i) => {
+    const hinge = b.hinges[i];
+    disposeChildren(hinge);
+    const long = f.axis === 'z';
+    const geo = long ? new THREE.BoxGeometry(depth, T, d) : new THREE.BoxGeometry(w, T, depth);
+    const flap = new THREE.Mesh(geo, flapMat);
+    flap.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), b.edges.material as THREE.LineBasicMaterial));
+    // dlhé ležia na krátkych
+    const y = long ? 1.5 * T : 0.5 * T;
+    if (long) {
+      hinge.position.set((f.side * w) / 2, h / 2, 0);
+      flap.position.set((-f.side * depth) / 2, y, 0);
+    } else {
+      hinge.position.set(0, h / 2, (f.side * d) / 2);
+      flap.position.set(0, y, (-f.side * depth) / 2);
+    }
+    hinge.add(flap);
+  });
+  b.liner.geometry.dispose();
+  b.liner.geometry = new THREE.BoxGeometry(w - 2 * T, h - T, d - 2 * T);
+  b.liner.position.y = T / 2;
+}
+
+/** Natočí klapky; k = koľko z cesty A → B má krabica za sebou (v stave A sú zavreté). */
+function setFlaps(b: BoxObj, angles: Flaps, k: number) {
+  FLAPS.forEach((f, i) => {
+    const a = angles[i] * k * DEG;
+    if (f.axis === 'z') b.hinges[i].rotation.set(0, 0, -f.side * a);
+    else b.hinges[i].rotation.set(f.side * a, 0, 0);
+  });
+}
+
 /** Textúry stien v poradí BoxGeometry: +x, −x, +y, −y, +z, −z */
 function faceMaps(id: number): THREE.CanvasTexture[] {
   const faces = ['side', 'side', 'top', 'top', 'handle', 'handle'] as const;
-  return faces.map((f) => faceTexture(f, id, view.numbers));
+  return faces.map((f, i) => faceTexture(f, id, view.numbers, i === 4));
 }
 
 /** Prekreslí textúry všetkých krabíc (napr. po zapnutí / vypnutí čísel). */
@@ -177,8 +258,14 @@ function makeBoxes() {
     mesh.userData.id = id;
     const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: EDGE_COLOR }));
     mesh.add(edges);
+    const liner = new THREE.Mesh(new THREE.BufferGeometry(), linerMats);
+    mesh.add(liner);
+    const hinges = FLAPS.map(() => new THREE.Group());
+    for (const hinge of hinges) mesh.add(hinge);
     scene.add(mesh);
-    boxes.set(id, { id, mesh, edges, mats });
+    const b: BoxObj = { id, mesh, edges, mats, liner, hinges };
+    buildLid(b);
+    boxes.set(id, b);
   }
 }
 
@@ -188,6 +275,7 @@ function resizeBoxes() {
     b.edges.geometry.dispose();
     b.mesh.geometry = new THREE.BoxGeometry(cfg.box.w, cfg.box.h, cfg.box.d);
     b.edges.geometry = new THREE.EdgesGeometry(b.mesh.geometry);
+    buildLid(b);
   }
 }
 
@@ -197,7 +285,12 @@ function applyView() {
   for (const b of boxes.values()) {
     for (const m of b.mats) m.opacity = view.opacity;
     b.edges.visible = view.edges;
+    // s klapkami je krabica hore otvorená: vrch skrytý, vnútro viditeľné
+    b.mats[2].visible = !view.flaps;
+    b.liner.visible = view.flaps;
+    for (const hinge of b.hinges) hinge.visible = view.flaps;
   }
+  flapMat.opacity = innerMat.opacity = view.opacity;
   for (const m of trailerMats) m.opacity = view.opacity;
   grid.visible = view.grid;
   trailer.visible = view.trailer;
@@ -278,7 +371,7 @@ function applyPoses() {
   for (const b of boxes.values()) {
     if (dragging && b.id === selected) continue;
     const tr = tracks.get(b.id);
-    if (tr) sample(tr, anim.t, b.mesh.position, b.mesh.quaternion);
+    if (tr) setFlaps(b, flapsOf(b.id), sample(tr, anim.t, b.mesh.position, b.mesh.quaternion));
   }
 }
 
@@ -316,6 +409,7 @@ function setConfig(next: Config) {
   Object.assign(cfg.trailer, next.trailer);
   Object.assign(cfg.box, next.box);
   cfg.b = next.b;
+  cfg.flaps = next.flaps;
   select(null);
   applyCamera();
   buildTrailer();
@@ -415,7 +509,7 @@ function commitSelected() {
 // ── presné hodnoty vybranej krabice ─────────────────────────────────────
 
 /** Poloha (m) a natočenie (°, poradie YXZ: ry dookola, rx dopredu, rz do boku) vo svete. */
-const boxEdit = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 };
+const boxEdit = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0, fl: 0, fr: 0, ff: 0, fb: 0 };
 
 function syncBoxEdit() {
   const on = selected !== null;
@@ -430,11 +524,25 @@ function syncBoxEdit() {
     boxEdit.rx = r(e.x / DEG, 100);
     boxEdit.ry = r(e.y / DEG, 100);
     boxEdit.rz = r(e.z / DEG, 100);
+    [boxEdit.fl, boxEdit.fr, boxEdit.ff, boxEdit.fb] = flapsOf(selected!);
   }
   for (const c of fPrecise.controllers) {
     c.enable(on);
     c.updateDisplay();
   }
+}
+
+function onFlapEdit() {
+  if (selected === null) return;
+  cfg.flaps[String(selected)] = [boxEdit.fl, boxEdit.fr, boxEdit.ff, boxEdit.fb];
+  persist();
+}
+
+function closeFlaps() {
+  if (selected === null) return;
+  delete cfg.flaps[String(selected)];
+  persist();
+  syncBoxEdit();
 }
 
 function onBoxEdit() {
@@ -502,8 +610,11 @@ renderer.domElement.addEventListener('pointerup', (e) => {
   const rect = renderer.domElement.getBoundingClientRect();
   ndc.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
   ray.setFromCamera(ndc, activeCam());
-  const hits = ray.intersectObjects([...boxes.values()].map((b) => b.mesh), false);
-  select(hits.length ? (hits[0].object.userData.id as number) : null);
+  // aj klik na klapku vyberie krabicu; čiary hrán sa nerátajú
+  const hits = ray.intersectObjects([...boxes.values()].map((b) => b.mesh), true).filter((h) => h.object instanceof THREE.Mesh);
+  let hit: THREE.Object3D | null = hits[0]?.object ?? null;
+  while (hit && hit.userData.id === undefined) hit = hit.parent;
+  select(hit ? (hit.userData.id as number) : null);
 });
 
 // ── panel ───────────────────────────────────────────────────────────────
@@ -518,6 +629,7 @@ const ui = {
   ground: () => dropSelected('ground'),
   platform: () => dropSelected('platform'),
   forget: forgetSelected,
+  closeFlaps: () => closeFlaps(),
   turnSide: () => rotateSelected('z', true),
   turnFront: () => rotateSelected('x', true),
   turnAround: () => rotateSelected('y', false),
@@ -528,6 +640,7 @@ const ui = {
   allToGuess: () => {
     if (!confirm('Zabudnúť všetky úpravy stavu B?')) return;
     cfg.b = {};
+    cfg.flaps = {};
     select(null);
     changed();
   },
@@ -619,6 +732,7 @@ fView.add(view, 'trailer').name('vozík').onChange(applyView);
 fView.add(view, 'free').name('voľný pohľad (F)').onChange(applyView).listen();
 fView.add(view, 'horizon').name('horizont (výška oka)').onChange(applyView);
 fView.add(view, 'numbers').name('čísla krabíc (N)').onChange(repaintBoxes).listen();
+fView.add(view, 'flaps').name('klapky / uška (U)').onChange(applyView).listen();
 fView.close();
 
 const fAnim = gui.addFolder('Animácia');
@@ -651,6 +765,11 @@ fPrecise.add(boxEdit, 'rz', -180, 180, 0.1).name('náklon do boku (°)').onChang
 fPrecise.add(boxEdit, 'x', -2, 4, 0.001).name('x (m)').onChange(onBoxEdit);
 fPrecise.add(boxEdit, 'y', -0.2, 1.5, 0.001).name('výška stredu (m)').onChange(onBoxEdit);
 fPrecise.add(boxEdit, 'z', -6, 0, 0.001).name('z (m)').onChange(onBoxEdit);
+fPrecise.add(boxEdit, 'fl', 0, 180, 0.5).name('klapka vľavo — dlhá (°)').onChange(onFlapEdit);
+fPrecise.add(boxEdit, 'fr', 0, 180, 0.5).name('klapka vpravo — dlhá (°)').onChange(onFlapEdit);
+fPrecise.add(boxEdit, 'ff', 0, 180, 0.5).name('klapka vpredu — krátka (°)').onChange(onFlapEdit);
+fPrecise.add(boxEdit, 'fb', 0, 180, 0.5).name('klapka vzadu — krátka (°)').onChange(onFlapEdit);
+fPrecise.add(ui, 'closeFlaps').name('zavrieť klapky');
 
 const fFile = gui.addFolder('Súbor');
 fFile.add(ui, 'save').name('uložiť do scene.json');
@@ -687,7 +806,10 @@ window.addEventListener('keydown', (e) => {
     view.free = !view.free;
     applyView();
   } else if (k === 'c') toggleCameraGizmo();
-  else if (k === 'n') {
+  else if (k === 'u') {
+    view.flaps = !view.flaps;
+    applyView();
+  } else if (k === 'n') {
     view.numbers = !view.numbers;
     repaintBoxes();
   }
@@ -719,7 +841,7 @@ function updateHud() {
     `${sel}\n` +
     `W posun · E rotácia · R / T / Y otočiť o 90° · G na zem · P na plošinu · [ ] ďalšia · Esc zrušiť\n` +
     `kamera: ← → natočenie · ↑ ↓ sklon · PgUp / PgDn výška · Shift ×10 · Alt ÷10 · C gizmo (vo F)\n` +
-    `medzerník prehrať · A / B stav · F voľný pohľad · N čísla${msg}`;
+    `medzerník prehrať · A / B stav · F voľný pohľad · N čísla · U klapky${msg}`;
 }
 
 // ── beh ─────────────────────────────────────────────────────────────────

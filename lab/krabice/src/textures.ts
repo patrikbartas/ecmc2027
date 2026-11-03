@@ -19,7 +19,8 @@ function hole(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
   ctx.fill();
 }
 
-export function faceTexture(face: Face, id: number, showNumber = true): THREE.CanvasTexture {
+/** `front` označí čelo, ktoré je pre klapky „vpredu" (+z krabice). */
+export function faceTexture(face: Face, id: number, showNumber = true, front = false): THREE.CanvasTexture {
   const W = 256;
   const H = 192;
   const canvas = document.createElement('canvas');
@@ -55,6 +56,11 @@ export function faceTexture(face: Face, id: number, showNumber = true): THREE.Ca
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(id), W / 2, face === 'handle' ? H * 0.62 : H / 2);
+    if (front) {
+      ctx.font = 'bold 18px system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('PREDOK', 12, H * 0.12);
+    }
   }
 
   const tex = new THREE.CanvasTexture(canvas);

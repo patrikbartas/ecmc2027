@@ -14,6 +14,14 @@ export interface Pose {
   q: Quat;
 }
 
+/**
+ * Uhly 4 vrchných klapiek v stupňoch: [vľavo, vpravo, vpredu, vzadu].
+ * Vľavo / vpravo sú dlhé (každá zakryje polovicu vrchu), vpredu / vzadu krátke, pod nimi.
+ * 0 = zavretá, 90 = kolmo hore, 180 = vyklopená naplocho von.
+ * „Vpredu" je čelo krabice, ktoré v stave A pozerá ku kamere (+z krabice).
+ */
+export type Flaps = [number, number, number, number];
+
 export interface Config {
   version: 1;
   camera: {
@@ -48,6 +56,8 @@ export interface Config {
   };
   /** Pózy v stave B (svetové súradnice). Chýbajúca krabica = odhad / stav A. */
   b: Record<string, Pose>;
+  /** Klapky v stave B. Chýbajúca krabica = všetko zavreté. V stave A sú vždy zavreté. */
+  flaps: Record<string, Flaps>;
 }
 
 /**
@@ -66,6 +76,7 @@ export const DEFAULTS: Config = {
   trailer: { x: 1.02, z: -2.97, yaw: 0, platform: 0.3, length: 1.3, width: 0.66, axle: 0, wheel: 0.22 },
   box: { w: 0.3, h: 0.23, d: 0.4 },
   b: {},
+  flaps: {},
 };
 
 export function defaults(): Config {
@@ -83,5 +94,6 @@ export function normalize(raw: unknown): Config {
     trailer: { ...base.trailer, ...(r.trailer ?? {}) },
     box: { ...base.box, ...(r.box ?? {}) },
     b: { ...(r.b ?? {}) },
+    flaps: { ...(r.flaps ?? {}) },
   };
 }
