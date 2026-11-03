@@ -237,10 +237,14 @@ function cameraFromObject() {
   refresh(fCam);
 }
 
-/** Jemné ladenie z klávesnice: šípky = natočenie / sklon, PgUp / PgDn = výška. */
-function nudgeCamera(key: string, big: boolean) {
-  const deg = big ? 1 : 0.1;
-  const m = big ? 0.1 : 0.01;
+/**
+ * Jemné ladenie z klávesnice: šípky = natočenie / sklon, PgUp / PgDn = výška.
+ * Krok 0,1° / 1 cm, so Shiftom 1° / 10 cm, s Alt 0,01° / 1 mm.
+ */
+function nudgeCamera(key: string, e: KeyboardEvent) {
+  const scale = e.shiftKey ? 10 : e.altKey ? 0.1 : 1;
+  const deg = 0.1 * scale;
+  const m = 0.01 * scale;
   const c = cfg.camera;
   if (key === 'arrowleft') c.yaw += deg;
   else if (key === 'arrowright') c.yaw -= deg;
@@ -501,20 +505,21 @@ const refresh = (folder: GUI) => {
   for (const c of folder.controllersRecursive()) c.updateDisplay();
 };
 
-const gui = new GUI({ title: 'Krabice — test' });
+// širší panel = dlhšie posuvníky = jemnejšie ladenie; stĺpec vedľa fotky (index.html)
+const gui = new GUI({ title: 'Krabice — test', width: 380, container: document.getElementById('panel')! });
 
 const fCam = gui.addFolder('Kamera');
 const onCam = () => {
   applyCamera();
   persist();
 };
-fCam.add(cfg.camera, 'fov', 25, 90, 0.1).name('zorný uhol (°)').onChange(onCam);
-fCam.add(cfg.camera, 'y', 0.3, 3, 0.01).name('výška (m)').onChange(onCam);
-fCam.add(cfg.camera, 'pitch', -60, 30, 0.1).name('sklon (°)').onChange(onCam);
-fCam.add(cfg.camera, 'yaw', -45, 45, 0.1).name('natočenie (°)').onChange(onCam);
-fCam.add(cfg.camera, 'roll', -15, 15, 0.1).name('náklon (°)').onChange(onCam);
-fCam.add(cfg.camera, 'x', -3, 3, 0.01).name('x (m)').onChange(onCam);
-fCam.add(cfg.camera, 'z', -3, 3, 0.01).name('z (m)').onChange(onCam);
+fCam.add(cfg.camera, 'fov', 40, 60, 0.01).name('zorný uhol (°)').onChange(onCam);
+fCam.add(cfg.camera, 'y', 1, 2.2, 0.001).name('výška (m)').onChange(onCam);
+fCam.add(cfg.camera, 'pitch', -25, 0, 0.01).name('sklon (°)').onChange(onCam);
+fCam.add(cfg.camera, 'yaw', -15, 15, 0.01).name('natočenie (°)').onChange(onCam);
+fCam.add(cfg.camera, 'roll', -5, 5, 0.01).name('náklon (°)').onChange(onCam);
+fCam.add(cfg.camera, 'x', -1, 1, 0.001).name('x (m)').onChange(onCam);
+fCam.add(cfg.camera, 'z', -1, 1, 0.001).name('z (m)').onChange(onCam);
 fCam.add(ui, 'cameraGizmo').name('gizmo na kameru (C)');
 fCam.add(ui, 'resetCamera').name('↺ predvolená kamera');
 
@@ -523,14 +528,14 @@ const onTrailer = () => {
   buildTrailer();
   changed();
 };
-fTrailer.add(cfg.trailer, 'x', -3, 5, 0.01).name('x (m)').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'z', -8, 0, 0.01).name('z (m)').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'yaw', -60, 60, 0.1).name('natočenie (°)').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'platform', 0.1, 0.8, 0.005).name('výška plošiny').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'length', 0.6, 2.5, 0.01).name('dĺžka').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'width', 0.4, 1.4, 0.01).name('šírka').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'axle', -1, 1, 0.01).name('os kolies').onChange(onTrailer);
-fTrailer.add(cfg.trailer, 'wheel', 0.1, 0.4, 0.005).name('polomer kolesa').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'x', -1, 3, 0.001).name('x (m)').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'z', -5, -1, 0.001).name('z (m)').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'yaw', -30, 30, 0.01).name('natočenie (°)').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'platform', 0.1, 0.6, 0.001).name('výška plošiny').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'length', 0.8, 2.2, 0.001).name('dĺžka').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'width', 0.4, 1.2, 0.001).name('šírka').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'axle', -0.8, 0.8, 0.001).name('os kolies').onChange(onTrailer);
+fTrailer.add(cfg.trailer, 'wheel', 0.1, 0.4, 0.001).name('polomer kolesa').onChange(onTrailer);
 fTrailer.add(ui, 'resetTrailer').name('↺ predvolený vozík');
 fTrailer.close();
 
@@ -539,9 +544,9 @@ const onBox = () => {
   resizeBoxes();
   changed();
 };
-fBox.add(cfg.box, 'w', 0.2, 0.7, 0.005).name('šírka (naprieč)').onChange(onBox);
-fBox.add(cfg.box, 'h', 0.15, 0.6, 0.005).name('výška').onChange(onBox);
-fBox.add(cfg.box, 'd', 0.2, 0.8, 0.005).name('dĺžka (pozdĺž)').onChange(onBox);
+fBox.add(cfg.box, 'w', 0.2, 0.6, 0.001).name('šírka (naprieč)').onChange(onBox);
+fBox.add(cfg.box, 'h', 0.15, 0.5, 0.001).name('výška').onChange(onBox);
+fBox.add(cfg.box, 'd', 0.2, 0.7, 0.001).name('dĺžka (pozdĺž)').onChange(onBox);
 fBox.add(ui, 'resetBox').name('↺ predvolený rozmer');
 fBox.close();
 
@@ -615,7 +620,7 @@ window.addEventListener('keydown', (e) => {
   }
   else if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'pageup', 'pagedown'].includes(k)) {
     e.preventDefault();
-    nudgeCamera(k, e.shiftKey);
+    nudgeCamera(k, e);
   } else return;
   updateHud();
 });
@@ -640,7 +645,7 @@ function updateHud() {
   hud.innerHTML =
     `${sel}\n` +
     `W posun · E rotácia · G na zem · P na plošinu · [ ] ďalšia · Esc zrušiť\n` +
-    `kamera: ← → natočenie · ↑ ↓ sklon · PgUp / PgDn výška · Shift ×10 · C gizmo (vo F)\n` +
+    `kamera: ← → natočenie · ↑ ↓ sklon · PgUp / PgDn výška · Shift ×10 · Alt ÷10 · C gizmo (vo F)\n` +
     `medzerník prehrať · A / B stav · F voľný pohľad · N čísla${msg}`;
 }
 

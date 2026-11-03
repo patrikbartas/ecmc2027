@@ -8,8 +8,11 @@
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; height: 100%; background: #111; color: #ddd; font: 13px/1.4 system-ui, sans-serif; }
-  body { display: grid; place-items: center; overflow: hidden; }
-  #stage { position: relative; width: min(100vw, calc(100vh * 4 / 3)); aspect-ratio: 4 / 3; }
+  /* panel je vedľa fotky, nie cez ňu — vpravo na fotke je vozík */
+  body { --panel: 380px; display: flex; overflow: hidden; }
+  #wrap { flex: 1; min-width: 0; display: grid; place-items: center; }
+  #panel { width: var(--panel); flex: none; height: 100vh; overflow-y: auto; background: #1f1f1f; }
+  #stage { position: relative; width: min(calc(100vw - var(--panel)), calc(100vh * 4 / 3)); aspect-ratio: 4 / 3; }
   #stage img, #stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   #stage img { user-select: none; pointer-events: none; }
   #hud {
@@ -20,9 +23,12 @@
 </style>
 </head>
 <body>
-<div id="stage">
-  <img id="foto" alt="">
-</div>
+<main id="wrap">
+  <div id="stage">
+    <img id="foto" alt="">
+  </div>
+</main>
+<aside id="panel"></aside>
 <div id="hud"></div>
 <script type="module" src="./src/main.ts"></script>
 </body>

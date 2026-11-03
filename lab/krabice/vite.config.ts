@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
@@ -6,11 +6,21 @@ import { defineConfig, type Plugin } from 'vite';
 const SCENE_FILE = fileURLToPath(new URL('./public/scene.json', import.meta.url));
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
 
-/** V dev serveri: POST /api/scene zapíše scénu do public/scene.json. */
+/**
+ * V dev serveri: POST /api/scene zapíše scénu do public/scene.json,
+ * GET /scene.json ju číta priamo z disku. Vite si zoznam súborov v public/ drží z watchera
+ * a ten scene.json ignoruje (aby uloženie nereloadlo stránku) — bez tohto by ho nevidel.
+ */
 function saveScene(): Plugin {
   return {
     name: 'krabice-save-scene',
     configureServer(server) {
+      server.middlewares.use('/scene.json', (req, res, next) => {
+        if (req.method !== 'GET' || !existsSync(SCENE_FILE)) return next();
+        res.setHeader('content-type', 'application/json');
+        res.setHeader('cache-control', 'no-store');
+        res.end(readFileSync(SCENE_FILE));
+      });
       server.middlewares.use('/api/scene', (req, res, next) => {
         if (req.method !== 'POST') return next();
         let body = '';

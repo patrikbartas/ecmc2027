@@ -42,12 +42,18 @@ Na web to nejde — `lab/` a `assets/boxes/` sú v `.vercelignore` v koreni repa
 | **A** / **B** | ukáž stav A / B |
 | **F** | voľný pohľad — scéna zboku, vidno aj kameru fotky |
 | **C** | vo voľnom pohľade: gizmo na kameru fotky (W posun, E rotácia) |
-| **← →** / **↑ ↓** | natočenie / sklon kamery o 0,1° (so Shiftom 1°) |
-| **PgUp** / **PgDn** | výška kamery o 1 cm (so Shiftom 10 cm) |
+| **← →** / **↑ ↓** | natočenie / sklon kamery o 0,1° (Shift 1°, Alt 0,01°) |
+| **PgUp** / **PgDn** | výška kamery o 1 cm (Shift 10 cm, Alt 1 mm) |
 | **N** | skryť / ukázať čísla krabíc |
 
-Panel vpravo: kamera, vozík, rozmer krabice, zobrazenie, čas animácie. Kamera, vozík aj
-rozmer majú vlastné tlačidlo **↺ predvolené** — vráti len danú časť, úpravy stavu B ostanú.
+Panel vpravo: kamera, vozík, rozmer krabice, zobrazenie, čas animácie.
+
+**Jemné ladenie hodnoty v paneli:** koliesko myši nad posuvníkom alebo číslom (jeden krok),
+ťahanie hore / dole priamo po čísle (s Alt jemnejšie, so Shiftom hrubšie), alebo hodnotu
+napísať a Enter.
+
+Kamera, vozík aj rozmer majú vlastné tlačidlo **↺ predvolené** — vráti len danú časť,
+úpravy stavu B ostanú.
 
 ## Postup ladenia
 
