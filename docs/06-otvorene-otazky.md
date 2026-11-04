@@ -5,7 +5,7 @@
 ## Blokujúce — bez toho sa web nepohne
 
 1. ~~**Kedy presne to bude?**~~ ✅ **1.–4. 7. 2027** (štvrtok–nedeľa). Preteky cez víkend 3.–4. 7., sprievodný program vo štvrtok a v piatok. Rozhodnuté 11/2026.
-2. **Kde bude HQ?** Čiastočne ✅ — registrácia bude v **Novej Tržnici** (Trnavské mýto). Miesto pretekov a HQ sa zatiaľ nezverejňujú. Salzburg mal park + obchod, Berlín Tempelhofer Feld. Určuje mapu, ubytovanie aj dopravu.
+2. **Kde bude HQ?** ✅ — HQ bude v **Novej Tržnici** (Trnavské mýto), na webe od 2026-11-04 (predtým len ako miesto registrácie). Miesto pretekov sa zatiaľ nezverejňuje. Salzburg mal park + obchod, Berlín Tempelhofer Feld. Určuje mapu, ubytovanie aj dopravu.
 3. **Je za tým právny subjekt?** (o. z. / s.r.o. / neformálna partia) Toto blokuje Stripe, sponzorské zmluvy aj faktúry.
 
 ## Dôležité

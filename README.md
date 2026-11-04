@@ -9,7 +9,7 @@ Live na [ecmc2027.com](https://ecmc2027.com).
 
 Landing page. Jeden statický `index.html` s inline CSS, bez závislostí — vycentrované logo,
 ktoré rotuje šiestimi farbami, a v rohoch termín (1.–4. 7. 2027) s odpočtom, miesto
-registrácie (Nová Tržnica), kontakt a Instagram. Klik na termín pridá podujatie do kalendára.
+HQ (Nová Tržnica), kontakt a Instagram. Klik na termín pridá podujatie do kalendára.
 JavaScript je len odpočet, odkaz do kalendára a skryté bicykle na klávese B. Deploy cez
 Vercel, automaticky pri push do `main`.
 

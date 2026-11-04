@@ -42,6 +42,16 @@ _Sem sa píšu zmeny, ktoré ešte nie sú nasadené na produkcii._
 
 ---
 
+## 2026-11-04
+
+### Zmenené
+
+- **Nová Tržnica je HQ, nie len miesto registrácie** — v rohu pod ňou je „Headquarters“
+  namiesto „Registration“, rovnako v popise pre vyhľadávače a zdieľanie odkazu
+  a v udalosti do kalendára (Google Kalendár aj `ecmc2027.ics`).
+
+---
+
 ## 2026-11-02
 
 Prvé informácie o podujatí na ostrej stránke.
